@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-// Fake Data (Fixed Toronto Image)
 const universities = [
   { id: 1, name: "Stanford University", country: "USA", fee: "$60k", rank: "#2", image: "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=800&q=80" },
   { id: 2, name: "Oxford University", country: "UK", fee: "£40k", rank: "#5", image: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=800&q=80" },
@@ -46,14 +45,15 @@ export default function UniversitiesPage() {
           <Link href="/dashboard/applications" className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl font-medium transition">
             <span>📂</span> My Applications
           </Link>
+          {/* NEW MENTORS LINK */}
+          <Link href="/dashboard/mentors" className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-xl font-medium transition">
+            <span>💬</span> Mentors
+          </Link>
         </nav>
 
-        {/* USER CARD (Fixed Link) */}
         <div className="p-4 border-t border-slate-100">
           <Link href="/dashboard/profile" className="flex items-center gap-3 hover:bg-slate-50 p-2 rounded-xl transition cursor-pointer group">
-            <div className="w-10 h-10 bg-indigo-100 group-hover:bg-indigo-600 group-hover:text-white transition rounded-full flex items-center justify-center text-indigo-600 font-bold">
-              JD
-            </div>
+            <div className="w-10 h-10 bg-indigo-100 group-hover:bg-indigo-600 group-hover:text-white transition rounded-full flex items-center justify-center text-indigo-600 font-bold">JD</div>
             <div>
               <p className="text-sm font-bold text-slate-700 group-hover:text-indigo-700 transition">John Doe</p>
               <p className="text-xs text-slate-500">View Profile</p>
@@ -93,10 +93,7 @@ export default function UniversitiesPage() {
                   <span>💰 Tuition:</span>
                   <span className="text-slate-900 font-bold">{uni.fee}</span>
                 </div>
-                <button 
-                  onClick={() => handleApply(uni.name)}
-                  className="w-full bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-indigo-600 transition"
-                >
+                <button onClick={() => handleApply(uni.name)} className="w-full bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-indigo-600 transition">
                   Apply Now
                 </button>
               </div>

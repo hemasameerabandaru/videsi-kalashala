@@ -28,14 +28,15 @@ export default function ApplicationsPage() {
           <div className="flex items-center gap-3 px-4 py-3 bg-indigo-50 text-indigo-700 rounded-xl font-semibold">
             <span>📂</span> My Applications
           </div>
+          {/* NEW MENTORS LINK */}
+          <Link href="/dashboard/mentors" className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-xl font-medium transition">
+            <span>💬</span> Mentors
+          </Link>
         </nav>
 
-        {/* USER CARD (Fixed Link) */}
         <div className="p-4 border-t border-slate-100">
           <Link href="/dashboard/profile" className="flex items-center gap-3 hover:bg-slate-50 p-2 rounded-xl transition cursor-pointer group">
-            <div className="w-10 h-10 bg-indigo-100 group-hover:bg-indigo-600 group-hover:text-white transition rounded-full flex items-center justify-center text-indigo-600 font-bold">
-              JD
-            </div>
+            <div className="w-10 h-10 bg-indigo-100 group-hover:bg-indigo-600 group-hover:text-white transition rounded-full flex items-center justify-center text-indigo-600 font-bold">JD</div>
             <div>
               <p className="text-sm font-bold text-slate-700 group-hover:text-indigo-700 transition">John Doe</p>
               <p className="text-xs text-slate-500">View Profile</p>

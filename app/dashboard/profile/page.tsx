@@ -9,14 +9,14 @@ export default function ProfilePage() {
   const handleLogout = () => {
     const confirmLogout = window.confirm("Are you sure you want to log out?");
     if (confirmLogout) {
-      router.push('/'); // Redirects to Homepage
+      router.push('/');
     }
   };
 
   return (
     <div className="min-h-screen bg-slate-50 flex font-sans">
       
-      {/* SIDEBAR (Standard) */}
+      {/* SIDEBAR */}
       <aside className="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col fixed h-full">
         <div className="p-6">
           <Link href="/" className="text-xl font-extrabold text-indigo-600 tracking-tight">Videsi Kalashala</Link>
@@ -32,9 +32,12 @@ export default function ProfilePage() {
           <Link href="/dashboard/applications" className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl font-medium transition">
             <span>📂</span> My Applications
           </Link>
+          {/* NEW MENTORS LINK */}
+          <Link href="/dashboard/mentors" className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-xl font-medium transition">
+            <span>💬</span> Mentors
+          </Link>
         </nav>
 
-        {/* User Card (Active State) */}
         <div className="p-4 border-t border-slate-100">
           <div className="flex items-center gap-3 bg-indigo-50 p-3 rounded-xl cursor-pointer">
             <div className="w-10 h-10 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold">JD</div>
@@ -51,8 +54,6 @@ export default function ProfilePage() {
         <h1 className="text-3xl font-bold text-slate-800 mb-8">My Profile ⚙️</h1>
 
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden max-w-2xl">
-          
-          {/* Header Banner */}
           <div className="h-32 bg-gradient-to-r from-indigo-500 to-purple-600 relative">
             <div className="absolute -bottom-10 left-8">
               <div className="w-24 h-24 bg-white rounded-full p-1 shadow-lg">
@@ -72,7 +73,6 @@ export default function ProfilePage() {
               <button className="text-indigo-600 font-bold text-sm hover:underline">Edit Photo</button>
             </div>
 
-            {/* Form */}
             <form className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
