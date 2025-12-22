@@ -52,9 +52,13 @@ export default function Dashboard() {
             <span>🗂️</span> Documents
           </Link>
 
-           {/* 🟢 NEW VISA LINK */}
           <Link href="/dashboard/visa" className="flex items-center gap-3 px-4 py-2 text-slate-600 hover:bg-purple-50 hover:text-purple-600 rounded-xl font-medium transition">
             <span>🛂</span> Visa Info
+          </Link>
+
+          {/* 🟢 NEW MOCK INTERVIEW LINK */}
+          <Link href="/dashboard/visa-mock" className="flex items-center gap-3 px-4 py-2 text-slate-600 hover:bg-emerald-50 hover:text-emerald-600 rounded-xl font-medium transition">
+            <span>🎤</span> Mock Interview
           </Link>
 
           <Link href="/dashboard/mentors" className="flex items-center gap-3 px-4 py-2 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-xl font-medium transition">

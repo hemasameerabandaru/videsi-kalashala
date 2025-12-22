@@ -1,38 +1,44 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 
-export default function ProfilePage() {
-  const router = useRouter();
-  const [user, setUser] = useState({
-    name: "Student",
-    email: "student@example.com", // Placeholder (since we didn't save email to localstorage yet)
-    country: "Not Selected",
-    phone: "+91 98765 43210",
-    joined: "December 2024"
+export default function StudentProfile() {
+  // Logic Toggles
+  const [highSchoolType, setHighSchoolType] = useState<"12th" | "Diploma">("12th");
+  const [hasMasters, setHasMasters] = useState(false);
+  const [isEditing, setIsEditing] = useState(true); // Start in edit mode
+
+  // Form Data
+  const [formData, setFormData] = useState({
+    firstName: "Student", lastName: "Name", email: "student@example.com", phone: "",
+    // 10th
+    tenthYear: "", tenthScore: "", tenthBoard: "", tenthBacklogs: "0",
+    // 12th (Added 'twelfthStream')
+    twelfthYear: "", twelfthScore: "", twelfthBoard: "", twelfthStream: "", twelfthBacklogs: "0",
+    // Diploma
+    diplomaYear: "", diplomaScore: "", diplomaStream: "", diplomaBacklogs: "0",
+    // Bachelors
+    bachelorsYear: "", bachelorsScore: "", bachelorsStream: "", bachelorsBacklogs: "0",
+    // Masters
+    mastersYear: "", mastersScore: "", mastersStream: "", mastersBacklogs: "0",
+    // Tests
+    englishTest: "Yet to give", englishReading: "", englishWriting: "", englishListening: "", englishSpeaking: "",
+    greStatus: "Yet to give", greScore: "",
+    workExp: "No",
+    // Preferences
+    prefCountry: "", prefCourse: "", budget: ""
   });
 
-  // Load data from Browser Memory
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedName = localStorage.getItem("studentName");
-      const savedCountry = localStorage.getItem("studentCountry");
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-      setUser(prev => ({
-        ...prev,
-        name: savedName || "Student",
-        country: savedCountry || "Not Selected"
-      }));
-    }
-  }, []);
-
-  // Logout Function
-  const handleLogout = () => {
-    const confirmLogout = window.confirm("Are you sure you want to log out?");
-    if (confirmLogout) {
-      localStorage.clear(); // Wipe memory
-      router.push('/'); // Go back to Landing Page
+  const handleSave = () => {
+    setIsEditing(false);
+    // In real app, save to DB here
+    alert("Profile Updated Successfully! 💾");
+    if(typeof window !== 'undefined') {
+        localStorage.setItem("studentName", formData.firstName);
     }
   };
 
@@ -45,78 +51,175 @@ export default function ProfilePage() {
           <Link href="/" className="text-xl font-extrabold text-indigo-600 tracking-tight">Videsi Kalashala</Link>
         </div>
         <nav className="flex-1 px-4 space-y-2 mt-4">
-          <Link href="/dashboard" className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-xl font-medium transition">
-            <span>📊</span> Dashboard
-          </Link>
-          <Link href="/dashboard/universities" className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-xl font-medium transition">
-            <span>🎓</span> Universities
-          </Link>
-          <Link href="/dashboard/applications" className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-xl font-medium transition">
-            <span>📂</span> My Applications
-          </Link>
-          <Link href="/dashboard/mentors" className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-xl font-medium transition">
-            <span>💬</span> Mentors
+          <Link href="/dashboard" className="flex items-center gap-3 px-4 py-2 text-slate-600 hover:bg-slate-50 rounded-xl font-medium transition">
+             <span>←</span> Back to Dashboard
           </Link>
         </nav>
       </aside>
 
       {/* MAIN CONTENT */}
       <main className="flex-1 p-8 ml-0 md:ml-64">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-800">My Profile 👤</h1>
-          <p className="text-slate-500">Manage your account settings and preferences.</p>
+        
+        <header className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-800">My Profile 👤</h1>
+            <p className="text-slate-500 mt-1">Keep this updated to get the best university recommendations.</p>
+          </div>
+          <button 
+            onClick={() => isEditing ? handleSave() : setIsEditing(true)}
+            className={`px-6 py-3 rounded-xl font-bold transition shadow-md ${
+                isEditing ? "bg-indigo-600 text-white hover:bg-indigo-700" : "bg-white text-indigo-600 border border-indigo-100"
+            }`}
+          >
+            {isEditing ? "Save Changes 💾" : "Edit Profile ✏️"}
+          </button>
         </header>
 
-        <div className="max-w-3xl bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-          
-          {/* Banner */}
-          <div className="h-32 bg-gradient-to-r from-indigo-500 to-purple-600"></div>
+        <div className={`max-w-4xl mx-auto space-y-8 ${isEditing ? "" : "opacity-80 pointer-events-none grayscale-[0.5]"}`}>
 
-          <div className="px-8 pb-8">
-            <div className="relative flex justify-between items-end -mt-12 mb-6">
-              {/* Avatar */}
-              <div className="w-24 h-24 bg-white rounded-full p-1 shadow-lg">
-                 <div className="w-full h-full bg-slate-100 rounded-full flex items-center justify-center text-3xl font-bold text-slate-400 uppercase">
-                    {user.name.charAt(0)}
+          {/* 1. Personal Info */}
+          <section className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 className="font-bold text-indigo-900 text-sm uppercase tracking-wide mb-6 flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs">1</span>
+              Personal Information
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1">First Name</label>
+                 <input name="firstName" value={formData.firstName} onChange={handleInputChange} className="w-full p-3 border rounded-xl font-medium" />
+              </div>
+              <div>
+                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Last Name</label>
+                 <input name="lastName" value={formData.lastName} onChange={handleInputChange} className="w-full p-3 border rounded-xl font-medium" />
+              </div>
+              <div>
+                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Email</label>
+                 <input name="email" value={formData.email} onChange={handleInputChange} className="w-full p-3 border rounded-xl font-medium" />
+              </div>
+              <div>
+                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Phone</label>
+                 <input name="phone" value={formData.phone} onChange={handleInputChange} className="w-full p-3 border rounded-xl font-medium" />
+              </div>
+            </div>
+          </section>
+
+          {/* 2. Academic History */}
+          <section className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 className="font-bold text-indigo-900 text-sm uppercase tracking-wide mb-6 flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs">2</span>
+              Academic History
+            </h3>
+
+            {/* 10th */}
+            <div className="mb-8 border-b border-slate-100 pb-8">
+              <h4 className="font-bold text-slate-700 mb-4">10th Grade</h4>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <input name="tenthYear" placeholder="Year" onChange={handleInputChange} className="p-3 border rounded-xl" />
+                <input name="tenthScore" placeholder="Score (%)" onChange={handleInputChange} className="p-3 border rounded-xl" />
+                <input name="tenthBoard" placeholder="Board" onChange={handleInputChange} className="p-3 border rounded-xl" />
+                <input name="tenthBacklogs" placeholder="Backlogs" onChange={handleInputChange} className="p-3 border rounded-xl" />
+              </div>
+            </div>
+
+            {/* 12th / Diploma Toggle */}
+            <div className="mb-8 border-b border-slate-100 pb-8">
+              <div className="flex gap-4 mb-4">
+                <button onClick={() => setHighSchoolType("12th")} className={`px-4 py-2 rounded-lg text-sm font-bold border transition ${highSchoolType === "12th" ? "bg-slate-800 text-white" : "bg-white text-slate-600"}`}>12th Grade</button>
+                <button onClick={() => setHighSchoolType("Diploma")} className={`px-4 py-2 rounded-lg text-sm font-bold border transition ${highSchoolType === "Diploma" ? "bg-slate-800 text-white" : "bg-white text-slate-600"}`}>Diploma</button>
+              </div>
+
+              {highSchoolType === "12th" ? (
+                // 🟢 12th Grade Logic (Now with Stream)
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4 animate-fade-in-up">
+                  <input name="twelfthYear" placeholder="12th Year" onChange={handleInputChange} className="p-3 border rounded-xl" />
+                  <input name="twelfthScore" placeholder="Score (%)" onChange={handleInputChange} className="p-3 border rounded-xl" />
+                  <input name="twelfthBoard" placeholder="Board" onChange={handleInputChange} className="p-3 border rounded-xl" />
+                  {/* New Stream Input */}
+                  <input name="twelfthStream" placeholder="Stream (e.g. MPC)" onChange={handleInputChange} className="p-3 border rounded-xl bg-slate-50 border-slate-200" />
+                  <input name="twelfthBacklogs" placeholder="Backlogs" onChange={handleInputChange} className="p-3 border rounded-xl" />
+                </div>
+              ) : (
+                // Diploma Logic
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 animate-fade-in-up">
+                  <input name="diplomaYear" placeholder="Diploma Year" onChange={handleInputChange} className="p-3 border rounded-xl bg-yellow-50" />
+                  <input name="diplomaScore" placeholder="Score (%)" onChange={handleInputChange} className="p-3 border rounded-xl bg-yellow-50" />
+                  <input name="diplomaStream" placeholder="Stream" onChange={handleInputChange} className="p-3 border rounded-xl bg-yellow-50" />
+                  <input name="diplomaBacklogs" placeholder="Backlogs" onChange={handleInputChange} className="p-3 border rounded-xl bg-yellow-50" />
+                </div>
+              )}
+            </div>
+
+            {/* Bachelors */}
+            <div className="mb-4">
+               <h4 className="font-bold text-slate-700 mb-4">Bachelor's Degree</h4>
+               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <input name="bachelorsYear" placeholder="Year" onChange={handleInputChange} className="p-3 border rounded-xl" />
+                  <input name="bachelorsScore" placeholder="CGPA / %" onChange={handleInputChange} className="p-3 border rounded-xl" />
+                  <input name="bachelorsStream" placeholder="Stream" onChange={handleInputChange} className="p-3 border rounded-xl" />
+                  <input name="bachelorsBacklogs" placeholder="Backlogs" onChange={handleInputChange} className="p-3 border rounded-xl" />
+               </div>
+            </div>
+
+            {/* Masters Toggle */}
+            <div className="mt-6 pt-4 border-t border-slate-100">
+               <label className="flex items-center gap-2 cursor-pointer mb-4">
+                 <input type="checkbox" checked={hasMasters} onChange={(e) => setHasMasters(e.target.checked)} className="w-5 h-5 rounded text-indigo-600" />
+                 <span className="font-bold text-slate-700">I have completed a Master's degree</span>
+               </label>
+
+               {hasMasters && (
+                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 animate-fade-in-up bg-indigo-50 p-4 rounded-xl">
+                    <input name="mastersYear" placeholder="Masters Year" onChange={handleInputChange} className="p-3 border rounded-xl bg-white" />
+                    <input name="mastersScore" placeholder="Score" onChange={handleInputChange} className="p-3 border rounded-xl bg-white" />
+                    <input name="mastersStream" placeholder="Specialization" onChange={handleInputChange} className="p-3 border rounded-xl bg-white" />
+                    <input name="mastersBacklogs" placeholder="Backlogs" onChange={handleInputChange} className="p-3 border rounded-xl bg-white" />
                  </div>
-              </div>
-              <button className="bg-white border border-slate-300 text-slate-700 font-bold px-4 py-2 rounded-lg hover:bg-slate-50 transition text-sm">
-                Edit Profile
-              </button>
+               )}
             </div>
+          </section>
 
-            <h2 className="text-2xl font-bold text-slate-800">{user.name}</h2>
-            <p className="text-slate-500 mb-6">Study Abroad Aspirant • {user.country}</p>
+          {/* 3. Test Scores */}
+          <section className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 className="font-bold text-indigo-900 text-sm uppercase tracking-wide mb-6 flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs">3</span>
+              Test Scores
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+               
+               <div>
+                 <label className="block text-sm font-bold text-slate-700 mb-2">English Proficiency</label>
+                 <select name="englishTest" onChange={handleInputChange} className="w-full p-3 border rounded-xl mb-3 bg-white">
+                    <option value="Yet to give">Yet to give</option>
+                    <option value="IELTS">IELTS</option>
+                    <option value="TOEFL">TOEFL</option>
+                    <option value="Duolingo">Duolingo</option>
+                 </select>
+                 {formData.englishTest !== 'Yet to give' && (
+                    <div className="grid grid-cols-4 gap-2 animate-fade-in-up">
+                      <input name="englishReading" placeholder="R" className="p-3 border rounded-xl text-center" />
+                      <input name="englishWriting" placeholder="W" className="p-3 border rounded-xl text-center" />
+                      <input name="englishListening" placeholder="L" className="p-3 border rounded-xl text-center" />
+                      <input name="englishSpeaking" placeholder="S" className="p-3 border rounded-xl text-center" />
+                    </div>
+                 )}
+               </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-slate-100 pt-6">
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Email Address</label>
-                <p className="font-medium text-slate-700">{user.email}</p>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Phone Number</label>
-                <p className="font-medium text-slate-700">{user.phone}</p>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Target Country</label>
-                <p className="font-medium text-slate-700">{user.country}</p>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Member Since</label>
-                <p className="font-medium text-slate-700">{user.joined}</p>
-              </div>
+               <div>
+                 <label className="block text-sm font-bold text-slate-700 mb-2">GRE Status</label>
+                 <div className="flex gap-3">
+                    <select name="greStatus" onChange={handleInputChange} className="w-1/2 p-3 border rounded-xl bg-white">
+                      <option value="Yet to give">Yet to give</option>
+                      <option value="Given">Given</option>
+                    </select>
+                    {formData.greStatus === 'Given' && (
+                      <input name="greScore" placeholder="Score (e.g. 320)" onChange={handleInputChange} className="w-1/2 p-3 border rounded-xl" />
+                    )}
+                 </div>
+               </div>
+
             </div>
+          </section>
 
-            <div className="mt-8 pt-8 border-t border-slate-100">
-               <button 
-                onClick={handleLogout}
-                className="flex items-center gap-2 text-red-600 font-bold hover:bg-red-50 px-4 py-2 rounded-lg transition"
-               >
-                 <span>🚪</span> Sign Out
-               </button>
-            </div>
-
-          </div>
         </div>
 
       </main>
