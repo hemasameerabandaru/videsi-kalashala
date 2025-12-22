@@ -1,61 +1,81 @@
 "use client";
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation'; // <--- New Import
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
-  const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter(); // <--- This controls the navigation
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    
-    // Simulate login delay
+    setLoading(true);
+
+    // Simulate checking password (Fake delay)
     setTimeout(() => {
-      setIsLoading(false);
-      // alert("Login successful!"); <--- Removed alert
-      router.push('/dashboard'); // <--- Redirects to Dashboard!
-    }, 2000);
+      alert("Welcome back! 👋");
+      router.push('/dashboard'); 
+    }, 1000);
   };
 
   return (
-    <div className="min-h-screen flex bg-white font-sans">
-      <div className="hidden lg:flex w-1/2 bg-indigo-600 relative overflow-hidden items-center justify-center">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-white opacity-10 rounded-full mix-blend-overlay filter blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500 opacity-20 rounded-full mix-blend-overlay filter blur-3xl translate-x-1/2 translate-y-1/2"></div>
-        <div className="relative z-10 text-center px-12 text-white">
-          <h2 className="text-4xl font-bold mb-6">Welcome Back! 🎓</h2>
-          <p className="text-indigo-100 text-lg">"The future belongs to those who believe in the beauty of their dreams."</p>
-        </div>
+    <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center p-6 font-sans">
+      
+      <div className="mb-8 text-center">
+        <Link href="/" className="text-3xl font-extrabold text-indigo-600 tracking-tight">
+          Videsi Kalashala
+        </Link>
       </div>
 
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-slate-50">
-        <div className="max-w-md w-full bg-white p-10 rounded-3xl shadow-xl border border-slate-100">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-slate-800">Login</h1>
-            <p className="text-slate-500 mt-2">Access your student dashboard</p>
+      <div className="bg-white w-full max-w-sm rounded-2xl shadow-xl border border-slate-100 overflow-hidden p-8">
+        <h2 className="text-2xl font-bold text-slate-800 mb-2 text-center">Welcome Back</h2>
+        <p className="text-slate-500 text-center mb-8 text-sm">Please sign in to continue your research.</p>
+
+        <form onSubmit={handleLogin} className="space-y-5">
+          
+          {/* Email Address */}
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-2">Email Address</label>
+            <input 
+              type="email" 
+              required 
+              placeholder="student@example.com" 
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
+            />
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
-              <input type="email" className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="student@example.com" required />
+          {/* Password */}
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <label className="block text-sm font-bold text-slate-700">Password</label>
+              <a href="#" className="text-xs text-indigo-600 font-bold hover:underline">Forgot?</a>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
-              <input type="password" className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="••••••••" required />
-            </div>
-            <button type="submit" disabled={isLoading} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-indigo-200">
-              {isLoading ? "Logging in..." : "Sign In"}
-            </button>
-          </form>
+            <input 
+              type="password" 
+              required 
+              placeholder="••••••••" 
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
+            />
+          </div>
 
-          <p className="text-center text-slate-500 text-sm mt-8">
-            Don't have an account? <Link href="/signup" className="text-indigo-600 font-bold hover:underline">Sign Up</Link>
-          </p>
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl hover:bg-indigo-600 transition shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            {loading ? "Signing in..." : "Log In"}
+          </button>
+
+        </form>
+
+        <div className="mt-6 text-center text-sm text-slate-500">
+          New to Videsi Kalashala? <Link href="/signup" className="text-indigo-600 font-bold hover:underline">Create Account</Link>
         </div>
       </div>
+      
+      <p className="mt-8 text-xs text-slate-400">
+        © 2024 Videsi Kalashala. All rights reserved.
+      </p>
     </div>
   );
 }
