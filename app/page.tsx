@@ -3,150 +3,161 @@ import React from 'react';
 import Link from 'next/link';
 
 export default function LandingPage() {
-  const countries = [
-    { name: "USA", flag: "🇺🇸", image: "https://images.unsplash.com/photo-1485738422979-f5c462d49f74?auto=format&fit=crop&w=800&q=80" },
-    { name: "UK", flag: "🇬🇧", image: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=800&q=80" },
-    { name: "Canada", flag: "🇨🇦", image: "https://images.unsplash.com/photo-1503614472-8c93d56e92ce?auto=format&fit=crop&w=800&q=80" },
-    { name: "Australia", flag: "🇦🇺", image: "https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?auto=format&fit=crop&w=800&q=80" },
-    { name: "Germany", flag: "🇩🇪", image: "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=800&q=80" },
-    { name: "France", flag: "🇫🇷", image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80" },
-    
-    // 🟢 FIXED: High-Stability Pexels Link for Ireland
-    { name: "Ireland", flag: "🇮🇪", image: "https://images.pexels.com/photos/1036371/pexels-photo-1036371.jpeg?auto=compress&cs=tinysrgb&w=800" },
-    
-    { name: "Italy", flag: "🇮🇹", image: "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=800&q=80" },
-    { name: "New Zealand", flag: "🇳🇿", image: "https://images.unsplash.com/photo-1589802829985-817e51171b92?auto=format&fit=crop&w=800&q=80" },
-    
-    // 🟢 FIXED: High-Stability Pexels Link for Netherlands
-    { name: "Netherlands", flag: "🇳🇱", image: "https://images.pexels.com/photos/208698/pexels-photo-208698.jpeg?auto=compress&cs=tinysrgb&w=800" },
-    
-    { name: "Sweden", flag: "🇸🇪", image: "https://images.unsplash.com/photo-1509356843151-3e7d96241e11?auto=format&fit=crop&w=800&q=80" },
-    { name: "Finland", flag: "🇫🇮", image: "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?auto=format&fit=crop&w=800&q=80" },
-    { name: "Switzerland", flag: "🇨🇭", image: "https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?auto=format&fit=crop&w=800&q=80" },
-    { name: "South Korea", flag: "🇰🇷", image: "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=800&q=80" },
-    { name: "Japan", flag: "🇯🇵", image: "https://images.unsplash.com/photo-1490806843957-31f4c9a91c65?auto=format&fit=crop&w=800&q=80" },
-  ];
-
   return (
-    <div className="min-h-screen bg-white font-sans text-slate-900">
+    <div className="min-h-screen bg-white font-sans text-slate-900 selection:bg-indigo-100 selection:text-indigo-700">
       
-      {/* NAVBAR */}
-      <nav className="fixed w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
-          <div className="text-2xl font-extrabold text-indigo-600 tracking-tight">
-            Videsi Kalashala
+      {/* 1. NAVBAR */}
+      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+             <span className="text-3xl">🎓</span>
+             <span className="text-xl font-extrabold text-slate-900 tracking-tight">Videsi Kalashala</span>
           </div>
-          <div className="hidden md:flex gap-8 font-medium text-slate-600">
-            <a href="#destinations" className="hover:text-indigo-600 transition">Destinations</a>
-            <a href="#services" className="hover:text-indigo-600 transition">Services</a>
-            <a href="#testimonials" className="hover:text-indigo-600 transition">Stories</a>
+          <div className="hidden md:flex items-center gap-8 font-medium text-slate-600">
+            <a href="#features" className="hover:text-indigo-600 transition">Features</a>
+            <a href="#process" className="hover:text-indigo-600 transition">How it Works</a>
+            <a href="#testimonials" className="hover:text-indigo-600 transition">Success Stories</a>
           </div>
-          <div className="flex gap-4">
-            <Link href="/admin" className="hidden md:block text-sm font-bold text-slate-400 hover:text-slate-600 py-3">
-              Staff Login
-            </Link>
-            {/* UPDATED: Points to Login Page now */}
-            <Link href="/login" className="bg-slate-900 text-white px-6 py-2.5 rounded-full font-bold hover:bg-indigo-600 transition shadow-lg hover:shadow-indigo-500/30">
-              Student Login
-            </Link>
+          <div className="flex items-center gap-4">
+             {/* LOGIN DROPDOWN / BUTTONS */}
+             <Link href="/dashboard" className="text-sm font-bold text-slate-600 hover:text-indigo-600 transition">
+               Student Login
+             </Link>
+             <Link href="/admin/dashboard" className="bg-slate-900 text-white px-5 py-2.5 rounded-full text-sm font-bold hover:bg-slate-800 transition shadow-lg hover:shadow-xl">
+               Staff Login 🔐
+             </Link>
           </div>
         </div>
       </nav>
 
-      {/* HERO SECTION */}
-      <section className="pt-32 pb-20 px-6 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <div className="relative z-10">
-            <span className="bg-indigo-50 text-indigo-700 px-4 py-2 rounded-full text-sm font-bold mb-6 inline-block">
-              🌍 Research Your Future
-            </span>
-            <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-6 text-slate-900">
-              Explore the World's <br/>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
-                Best Universities
-              </span>
+      {/* 2. HERO SECTION */}
+      <section className="relative pt-20 pb-32 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center">
+          
+          <div className="animate-fade-in-up">
+            <div className="inline-block px-4 py-1.5 rounded-full bg-indigo-50 text-indigo-700 font-bold text-xs uppercase tracking-wide mb-6 border border-indigo-100">
+              🚀 #1 Study Abroad Consultancy
+            </div>
+            <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 leading-[1.1] mb-6">
+              Your Dream University <br/>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">is Waiting.</span>
             </h1>
-            <p className="text-lg text-slate-600 mb-8 leading-relaxed max-w-lg">
-              Compare courses, scholarships, and visa rules across 15+ countries. Create your free profile to start your research today.
+            <p className="text-lg text-slate-600 mb-8 max-w-lg leading-relaxed">
+              From shortlisting universities to visa approval, we automate your entire study abroad journey. Zero stress, 100% transparency.
             </p>
             <div className="flex gap-4">
-              <Link href="/signup" className="bg-indigo-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-indigo-700 transition shadow-xl shadow-indigo-200">
-                Start Researching
+              <Link href="/dashboard" className="px-8 py-4 bg-indigo-600 text-white rounded-xl font-bold text-lg hover:bg-indigo-700 transition shadow-lg hover:shadow-indigo-500/30">
+                Start My Journey ✈️
               </Link>
-              <button className="px-8 py-4 rounded-xl font-bold text-slate-600 border border-slate-200 hover:bg-slate-50 transition">
-                Talk to Expert
+              <button className="px-8 py-4 bg-white text-slate-700 border border-slate-200 rounded-xl font-bold text-lg hover:bg-slate-50 transition">
+                Book Consultation
               </button>
             </div>
-          </div>
-          
-          <div className="relative">
-            <div className="absolute -top-10 -right-10 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-            <div className="absolute -bottom-10 -left-10 w-72 h-72 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
-            <img 
-              src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1600&q=80" 
-              alt="Students" 
-              className="rounded-3xl shadow-2xl relative z-10 rotate-2 hover:rotate-0 transition duration-500 border-4 border-white"
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* DESTINATIONS GRID */}
-      <section id="destinations" className="py-20 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4 text-slate-900">Where do you want to study? ✈️</h2>
-            <p className="text-slate-500 max-w-2xl mx-auto">
-              We process applications for all major study destinations. Select a country to start your journey.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {countries.map((country, index) => (
-              <div key={index} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition group border border-slate-100">
-                <div className="h-40 overflow-hidden relative">
-                  <img src={country.image} alt={country.name} className="w-full h-full object-cover group-hover:scale-110 transition duration-700" />
-                  <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg text-xl shadow-sm">
-                    {country.flag}
-                  </div>
-                </div>
-                <div className="p-5">
-                  <h3 className="text-lg font-bold text-slate-800 mb-2">{country.name}</h3>
-                  <Link href="/signup" className="text-indigo-600 font-bold text-sm hover:underline flex items-center gap-1">
-                    View Universities <span>→</span>
-                  </Link>
-                </div>
+            <div className="mt-10 flex items-center gap-4 text-sm font-bold text-slate-500">
+              <div className="flex -space-x-3">
+                <img src="https://images.pexels.com/photos/1181682/pexels-photo-1181682.jpeg?auto=compress&cs=tinysrgb&w=100" className="w-10 h-10 rounded-full border-2 border-white" alt="Student" />
+                <img src="https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=100" className="w-10 h-10 rounded-full border-2 border-white" alt="Student" />
+                <img src="https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=100" className="w-10 h-10 rounded-full border-2 border-white" alt="Student" />
               </div>
-            ))}
+              <p>Trusted by 1,200+ students</p>
+            </div>
+          </div>
+
+          <div className="relative">
+             <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-tr from-indigo-100 to-purple-100 rounded-full blur-3xl opacity-50 -z-10"></div>
+             <img 
+               src="https://images.pexels.com/photos/1438081/pexels-photo-1438081.jpeg?auto=compress&cs=tinysrgb&w=800" 
+               alt="Student with Books" 
+               className="rounded-3xl shadow-2xl rotate-2 hover:rotate-0 transition duration-500 border-8 border-white"
+             />
+             
+             {/* Floating Badge */}
+             <div className="absolute -bottom-6 -left-6 bg-white p-4 rounded-2xl shadow-xl border border-slate-100 flex items-center gap-3 animate-bounce-slow">
+               <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-2xl">✅</div>
+               <div>
+                 <p className="text-xs font-bold text-slate-400 uppercase">Visa Success</p>
+                 <p className="text-xl font-extrabold text-slate-900">98.2%</p>
+               </div>
+             </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* 3. FEATURES SECTION */}
+      <section id="features" className="py-24 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <h2 className="text-3xl font-bold text-slate-900 mb-4">Everything you need to fly 🛫</h2>
+            <p className="text-slate-500">We don't just fill forms. We build your profile, train you for interviews, and get you funded.</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Feature 1 */}
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition group">
+              <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition">🧠</div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">AI Course Matcher</h3>
+              <p className="text-slate-500 leading-relaxed">
+                Confused? Our AI analyzes your grades and budget to suggest the perfect universities for you.
+              </p>
+            </div>
+            {/* Feature 2 */}
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition group">
+              <div className="w-14 h-14 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition">🎤</div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">Mock Visa Interviews</h3>
+              <p className="text-slate-500 leading-relaxed">
+                Practice 1-on-1 with experts. Get graded on confidence and clarity before the real embassy interview.
+              </p>
+            </div>
+            {/* Feature 3 */}
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition group">
+              <div className="w-14 h-14 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition">💰</div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">Loan Assistance</h3>
+              <p className="text-slate-500 leading-relaxed">
+                We help you calculate expenses and connect you with trusted loan providers for easy funding.
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* CTA SECTION */}
-      <section className="py-24 px-6">
-        <div className="max-w-5xl mx-auto bg-slate-900 rounded-3xl p-12 text-center text-white relative overflow-hidden">
-          <div className="relative z-10">
-            <h2 className="text-4xl font-bold mb-6">Ready to apply?</h2>
-            <p className="text-slate-400 text-lg mb-8 max-w-2xl mx-auto">
-              Sign up today to tell us your preferences (Email, Phone, Country) and we will assign a dedicated mentor to you.
-            </p>
-            <Link href="/signup" className="bg-white text-slate-900 px-10 py-4 rounded-xl font-bold text-lg hover:bg-indigo-50 transition inline-block">
-              Create Free Account
-            </Link>
+      {/* 4. STATS STRIP */}
+      <section className="py-20 bg-slate-900 text-white">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+          <div>
+            <p className="text-4xl font-extrabold text-indigo-400 mb-2">1,200+</p>
+            <p className="text-slate-400 font-bold text-sm uppercase tracking-wider">Students Placed</p>
+          </div>
+          <div>
+            <p className="text-4xl font-extrabold text-indigo-400 mb-2">₹50 Cr+</p>
+            <p className="text-slate-400 font-bold text-sm uppercase tracking-wider">Scholarships Won</p>
+          </div>
+          <div>
+            <p className="text-4xl font-extrabold text-indigo-400 mb-2">15+</p>
+            <p className="text-slate-400 font-bold text-sm uppercase tracking-wider">Countries</p>
+          </div>
+          <div>
+            <p className="text-4xl font-extrabold text-indigo-400 mb-2">100%</p>
+            <p className="text-slate-400 font-bold text-sm uppercase tracking-wider">Support</p>
           </div>
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="bg-white text-slate-500 py-12 border-t border-slate-100">
-        <div className="max-w-7xl mx-auto px-6 text-center">
-          <p className="font-bold text-slate-900 text-lg mb-2">Videsi Kalashala</p>
-          <p className="text-sm">Empowering students to research and achieve their global dreams.</p>
-          <div className="mt-8 text-xs text-slate-400">
-            © 2024 Videsi Kalashala. All rights reserved.
-          </div>
+      {/* 5. FOOTER */}
+      <footer className="py-12 border-t border-slate-200">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+           <div>
+             <span className="text-xl font-extrabold text-slate-900">Videsi Kalashala</span>
+             <p className="text-slate-500 text-sm mt-2">© 2025 All Rights Reserved.</p>
+           </div>
+           <div className="flex gap-6">
+             <a href="#" className="text-slate-500 hover:text-indigo-600">Instagram</a>
+             <a href="#" className="text-slate-500 hover:text-indigo-600">LinkedIn</a>
+             <a href="#" className="text-slate-500 hover:text-indigo-600">Twitter</a>
+           </div>
         </div>
       </footer>
+
     </div>
   );
 }
