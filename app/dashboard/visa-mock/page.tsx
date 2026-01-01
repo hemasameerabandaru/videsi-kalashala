@@ -1,195 +1,157 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 
-export default function VisaMockBooking() {
-  const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({ country: "", university: "", course: "" });
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+export default function VisaMockInterview() {
+  
+  // Interview State
+  const [started, setStarted] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [isRecording, setIsRecording] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
 
-  // Mock Slots
-  const slots = ["10:00 AM", "02:00 PM", "05:30 PM", "08:00 PM"];
+  // Mock Questions Bank
+  const questions = [
+    "Why did you choose this specific university?",
+    "How will you fund your education in the USA?",
+    "What are your plans after graduation?",
+    "Why do you want to study in the USA and not in India?",
+    "Tell me about your academic background."
+  ];
 
-  const handleNext = () => {
-    if (step === 1 && (!formData.country || !formData.university || !formData.course)) {
-      alert("Please fill in all details first.");
-      return;
+  // Simulate Recording
+  const toggleRecording = () => {
+    if (!isRecording) {
+      setIsRecording(true);
+      setFeedback(null);
+    } else {
+      setIsRecording(false);
+      // Simulate "AI Analysis" delay
+      setTimeout(() => {
+        setFeedback("Good confidence! Try to be more specific about your course modules in the next answer.");
+      }, 1000);
     }
-    setStep(step + 1);
   };
 
-  const handleBook = () => {
-    setStep(3); // Success Screen
+  const nextQuestion = () => {
+    if (currentQuestion < questions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+      setFeedback(null);
+      setIsRecording(false);
+    } else {
+      alert("Interview Completed! Great job.");
+      setStarted(false);
+      setCurrentQuestion(0);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex font-sans">
+    <div className="min-h-screen bg-slate-900 font-sans text-white flex flex-col">
       
-      {/* SIDEBAR */}
-      <aside className="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col fixed h-full">
-        <div className="p-6">
-          <Link href="/" className="text-xl font-extrabold text-indigo-600 tracking-tight">Videsi Kalashala</Link>
+      {/* HEADER */}
+      <header className="px-8 py-6 flex justify-between items-center border-b border-slate-800">
+        <div className="flex items-center gap-3">
+          <Link href="/dashboard" className="text-slate-400 hover:text-white transition">← Exit</Link>
+          <span className="font-bold text-xl tracking-tight">AI Interview Trainer 🤖</span>
         </div>
-        <nav className="flex-1 px-4 space-y-2 mt-4 overflow-y-auto h-[calc(100vh-180px)]">
-          <Link href="/dashboard" className="flex items-center gap-3 px-4 py-2 text-slate-600 hover:bg-slate-50 rounded-xl font-medium transition">
-             <span>←</span> Back to Dashboard
-          </Link>
-        </nav>
-      </aside>
+        <div className="bg-slate-800 px-4 py-1.5 rounded-full text-xs font-bold text-slate-300">
+          🇺🇸 F-1 Visa Mode
+        </div>
+      </header>
 
       {/* MAIN CONTENT */}
-      <main className="flex-1 p-8 ml-0 md:ml-64 flex justify-center items-center min-h-[90vh]">
+      <main className="flex-1 flex flex-col items-center justify-center p-6 text-center">
         
-        <div className="bg-white p-10 rounded-3xl shadow-xl border border-slate-200 w-full max-w-2xl relative overflow-hidden">
-          
-          {/* PROGRESS BAR */}
-          <div className="absolute top-0 left-0 w-full h-2 bg-slate-100">
-            <div 
-              className="h-full bg-indigo-600 transition-all duration-500" 
-              style={{ width: step === 1 ? '33%' : step === 2 ? '66%' : '100%' }}
-            ></div>
+        {!started ? (
+          // 1. START SCREEN
+          <div className="max-w-md animate-fade-in-up">
+            <div className="w-24 h-24 bg-indigo-600 rounded-full flex items-center justify-center text-5xl mx-auto mb-8 shadow-lg shadow-indigo-500/50">
+              🎤
+            </div>
+            <h1 className="text-4xl font-bold mb-4">Ready to Practice?</h1>
+            <p className="text-slate-400 mb-8 text-lg">
+              I will ask you 5 common visa questions. Speak clearly and confidently. I'll give you instant feedback.
+            </p>
+            <button 
+              onClick={() => setStarted(true)}
+              className="bg-white text-slate-900 px-8 py-4 rounded-xl font-bold text-lg hover:bg-indigo-50 transition hover:scale-105"
+            >
+              Start Interview
+            </button>
+            <p className="text-xs text-slate-600 mt-6">Ensure your microphone is enabled.</p>
           </div>
+        ) : (
+          // 2. INTERVIEW INTERFACE
+          <div className="w-full max-w-3xl animate-fade-in-up">
+            
+            {/* Progress Bar */}
+            <div className="w-full bg-slate-800 h-1.5 rounded-full mb-10 overflow-hidden">
+               <div 
+                 className="bg-indigo-500 h-full transition-all duration-500" 
+                 style={{ width: `${((currentQuestion + 1) / questions.length) * 100}%` }}
+               ></div>
+            </div>
 
-          {/* STEP 1: DETAILS */}
-          {step === 1 && (
-            <div className="animate-fade-in-up">
-              <span className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold uppercase mb-4 inline-block">Step 1 of 3</span>
-              <h1 className="text-3xl font-bold text-slate-800 mb-2">Target Details 🎯</h1>
-              <p className="text-slate-500 mb-8">Tell us where you are going so we can simulate the right interview.</p>
+            {/* AI Avatar / Visualization */}
+            <div className="mb-10 relative">
+               <div className={`w-32 h-32 rounded-full mx-auto flex items-center justify-center text-4xl border-4 transition-all duration-300
+                 ${isRecording ? 'border-red-500 bg-red-500/10 animate-pulse' : 'border-slate-700 bg-slate-800'}
+               `}>
+                 {isRecording ? '🎙️' : '🤖'}
+               </div>
+               {isRecording && (
+                 <div className="absolute top-0 left-1/2 -translate-x-1/2 -mt-12">
+                   <span className="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full animate-bounce">
+                     Listening...
+                   </span>
+                 </div>
+               )}
+            </div>
 
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Target Country</label>
-                  <select 
-                    className="w-full p-4 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-indigo-500 outline-none font-medium"
-                    value={formData.country}
-                    onChange={(e) => setFormData({...formData, country: e.target.value})}
-                  >
-                    <option value="">Select Country</option>
-                    <option value="USA">🇺🇸 USA (F-1 Visa)</option>
-                    <option value="UK">🇬🇧 UK (Tier 4)</option>
-                    <option value="Canada">🇨🇦 Canada (Study Permit)</option>
-                    <option value="Germany">🇩🇪 Germany (Student Visa)</option>
-                    <option value="Australia">🇦🇺 Australia (Subclass 500)</option>
-                  </select>
-                </div>
+            {/* Question Card */}
+            <div className="mb-12">
+              <p className="text-indigo-400 font-bold text-sm uppercase tracking-wider mb-4">Question {currentQuestion + 1} of {questions.length}</p>
+              <h2 className="text-3xl md:text-4xl font-bold leading-tight">
+                "{questions[currentQuestion]}"
+              </h2>
+            </div>
 
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">University Name</label>
-                  <input 
-                    type="text" 
-                    placeholder="e.g. Arizona State University" 
-                    className="w-full p-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none font-medium"
-                    value={formData.university}
-                    onChange={(e) => setFormData({...formData, university: e.target.value})}
-                  />
-                </div>
+            {/* Feedback Area */}
+            {feedback && (
+              <div className="bg-emerald-500/10 border border-emerald-500/30 p-6 rounded-2xl mb-8 text-left animate-fade-in-up">
+                 <h3 className="text-emerald-400 font-bold text-sm uppercase mb-1">AI Feedback Analysis</h3>
+                 <p className="text-emerald-100 text-lg">"{feedback}"</p>
+              </div>
+            )}
 
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Course / Major</label>
-                  <input 
-                    type="text" 
-                    placeholder="e.g. MS in Computer Science" 
-                    className="w-full p-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none font-medium"
-                    value={formData.course}
-                    onChange={(e) => setFormData({...formData, course: e.target.value})}
-                  />
-                </div>
-
+            {/* Controls */}
+            <div className="flex gap-4 justify-center">
+              {!feedback ? (
                 <button 
-                  onClick={handleNext}
-                  className="w-full bg-indigo-600 text-white font-bold py-4 rounded-xl text-lg hover:bg-indigo-700 transition shadow-lg mt-4"
+                  onClick={toggleRecording}
+                  className={`px-8 py-4 rounded-xl font-bold text-lg flex items-center gap-3 transition
+                    ${isRecording ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-indigo-600 text-white hover:bg-indigo-700'}
+                  `}
                 >
-                  Next: Choose Time →
+                  {isRecording ? (
+                    <><span>⬛</span> Stop Recording</>
+                  ) : (
+                    <><span>🔴</span> Start Answer</>
+                  )}
                 </button>
-              </div>
-            </div>
-          )}
-
-          {/* STEP 2: BOOKING */}
-          {step === 2 && (
-            <div className="animate-fade-in-up">
-              <button onClick={() => setStep(1)} className="text-slate-400 text-sm hover:text-indigo-600 mb-4 font-bold">← Back</button>
-              <h1 className="text-3xl font-bold text-slate-800 mb-2">Pick a Slot 📅</h1>
-              <p className="text-slate-500 mb-8">Select a time for your 1-on-1 mock interview.</p>
-
-              <div className="space-y-6">
-                
-                {/* Date Selection */}
-                <div>
-                   <label className="block text-sm font-bold text-slate-700 mb-3">Select Date</label>
-                   <div className="flex gap-3">
-                     {["Today", "Tomorrow", "Wed, 26 Dec"].map((d) => (
-                       <button 
-                         key={d} 
-                         onClick={() => setSelectedDate(d)}
-                         className={`px-5 py-3 rounded-xl border font-bold transition ${
-                            selectedDate === d ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-400'
-                         }`}
-                       >
-                         {d}
-                       </button>
-                     ))}
-                   </div>
-                </div>
-
-                {/* Time Selection */}
-                <div className={`transition-all duration-300 ${selectedDate ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
-                   <label className="block text-sm font-bold text-slate-700 mb-3">Select Time</label>
-                   <div className="grid grid-cols-2 gap-3">
-                     {slots.map((s) => (
-                       <button 
-                         key={s} 
-                         onClick={() => setSelectedSlot(s)}
-                         className={`px-5 py-3 rounded-xl border font-bold transition ${
-                            selectedSlot === s ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-400'
-                         }`}
-                       >
-                         {s}
-                       </button>
-                     ))}
-                   </div>
-                </div>
-
+              ) : (
                 <button 
-                  onClick={handleBook}
-                  disabled={!selectedSlot}
-                  className="w-full bg-emerald-600 text-white font-bold py-4 rounded-xl text-lg hover:bg-emerald-700 transition shadow-lg mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={nextQuestion}
+                  className="bg-white text-slate-900 px-8 py-4 rounded-xl font-bold text-lg hover:bg-indigo-50 transition flex items-center gap-2"
                 >
-                  Confirm Booking ($20)
+                  Next Question →
                 </button>
-                <p className="text-center text-xs text-slate-400 mt-2">Premium 30-min session with Feedback Report.</p>
-
-              </div>
+              )}
             </div>
-          )}
 
-          {/* STEP 3: SUCCESS */}
-          {step === 3 && (
-            <div className="text-center animate-fade-in-up py-10">
-              <div className="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-5xl mx-auto mb-6">
-                🎤
-              </div>
-              <h2 className="text-3xl font-bold text-slate-800 mb-4">You're Booked!</h2>
-              <p className="text-slate-600 mb-8 leading-relaxed">
-                Your mock interview for <b>{formData.country}</b> is confirmed for <b>{selectedDate} at {selectedSlot}</b>.
-                <br/>
-                Please have your <b>{formData.university}</b> offer letter ready.
-              </p>
-              
-              <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-xl mb-8 text-left max-w-sm mx-auto">
-                <p className="text-yellow-800 font-bold text-sm mb-1">💡 Pro Tip:</p>
-                <p className="text-yellow-700 text-xs">Prepare an answer for: "Why did you choose this specific course?" It is the most common question!</p>
-              </div>
+          </div>
+        )}
 
-              <Link href="/dashboard" className="bg-slate-900 text-white px-8 py-4 rounded-xl font-bold hover:bg-slate-800 transition">
-                Return to Dashboard
-              </Link>
-            </div>
-          )}
-
-        </div>
       </main>
     </div>
   );
