@@ -2,228 +2,168 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 
-export default function VisaHub() {
-  const [selectedCountry, setSelectedCountry] = useState("UK");
+export default function VisaGuide() {
+  
+  const [country, setCountry] = useState("USA");
 
-  // Extended Data Structure to include Processing Options
-  const visaData: Record<string, { 
-    title: string; 
-    steps: string[]; 
-    docs: string[]; 
-    tips: string;
-    processing?: { type: string; time: string; cost: string; desc: string }[] 
-  }> = {
-    "UK": {
-      title: "Student Visa (Tier 4) 🇬🇧",
-      steps: [
-        "Receive CAS (Confirmation of Acceptance) from Uni.",
-        "Apply online on the UK Gov website.",
-        "Pay the Healthcare Surcharge (IHS).",
-        "Book appointment at VFS Global for biometrics.",
-        "Mail your passport and documents."
-      ],
-      docs: ["CAS Number", "TB Test Results", "Financial Proof (28-day rule)", "Valid Passport"],
-      tips: "Ensure your funds have been in the bank for at least 28 consecutive days before applying.",
-      // 🟢 NEW PROCESSING OPTIONS FOR UK
-      processing: [
-        { 
-          type: "Standard Service", 
-          time: "15 Working Days (3 Weeks)", 
-          cost: "Included in Visa Fee (£490)", 
-          desc: "The default option. Best if you apply early (3 months before course)." 
-        },
-        { 
-          type: "Priority Service", 
-          time: "5 Working Days", 
-          cost: "+ £500 Extra", 
-          desc: "Great for tight deadlines. Your application is placed at the front of the queue." 
-        },
-        { 
-          type: "Super Priority Service", 
-          time: "Next Working Day ⚡", 
-          cost: "+ £1,000 Extra", 
-          desc: "The fastest option. You usually get a decision by the end of the next day." 
-        }
-      ]
-    },
-    "USA": {
+  // Visa Data for different countries
+  const visaData: Record<string, any> = {
+    USA: {
       title: "F-1 Student Visa 🇺🇸",
+      cost: "$185 (Visa Fee) + $350 (SEVIS)",
+      time: "2-4 Weeks",
       steps: [
-        "Receive Form I-20 from your university.",
-        "Pay the SEVIS I-901 Fee ($350).",
-        "Complete the DS-160 Online Application.",
-        "Book two appointments: Biometrics & Interview.",
-        "Attend the Visa Interview at the US Embassy."
+        { id: 1, title: "Get I-20 Form", desc: "Receive the I-20 form from your university after accepting the offer." },
+        { id: 2, title: "Pay SEVIS Fee", desc: "Pay the $350 SEVIS I-901 fee online at fmjfee.com." },
+        { id: 3, title: "Fill DS-160", desc: "Complete the Online Nonimmigrant Visa Application (DS-160)." },
+        { id: 4, title: "Book Appointment", desc: "Schedule your Biometrics and Consular Interview slots." },
+        { id: 5, title: "Attend Interview", desc: "Visit the consulate with your documents. Answer questions confidently." }
       ],
-      docs: ["Original I-20 Form", "DS-160 Confirmation Page", "SEVIS Fee Receipt", "Financial Proof (Bank Statements)"],
-      tips: "Be honest during the interview. Proving you intend to return to your home country after studies is crucial."
+      docs: ["Original I-20", "Passport", "DS-160 Confirmation", "SEVIS Receipt", "Financial Proof"]
     },
-    "Canada": {
-      title: "Study Permit 🇨🇦",
+    UK: {
+      title: "Student Route Visa 🇬🇧",
+      cost: "£490 (Visa) + £776/year (IHS)",
+      time: "3 Weeks",
       steps: [
-        "Get Letter of Acceptance (LOA) from DLI.",
-        "Create a GCKey account on the IRCC website.",
-        "Upload documents and pay fees ($150).",
-        "Give Biometrics at a collection centre.",
-        "Wait for Passport Request (PPR)."
+        { id: 1, title: "Receive CAS", desc: "Get your Confirmation of Acceptance for Studies (CAS) number." },
+        { id: 2, title: "TB Test", desc: "Get a Tuberculosis (TB) test certificate from an approved clinic." },
+        { id: 3, title: "Fill Online App", desc: "Apply on the GOV.UK website and pay the visa fee." },
+        { id: 4, title: "Pay IHS Surcharge", desc: "Pay the Immigration Health Surcharge to access the NHS." },
+        { id: 5, title: "Biometrics", desc: "Visit VFS Global to submit fingerprints and photo." }
       ],
-      docs: ["Letter of Acceptance", "GIC Certificate ($10,000)", "Medical Exam Receipt", "SOP for Visa"],
-      tips: "The Statement of Purpose (SOP) for the visa is different from the university SOP. Focus on why Canada."
+      docs: ["CAS Number", "Passport", "TB Certificate", "Financial Statements", "ATAS Certificate (if applicable)"]
     },
-    "Germany": {
-      title: "National Visa (D-Type) 🇩🇪",
+    Germany: {
+      title: "German Student Visa 🇩🇪",
+      cost: "€75",
+      time: "4-6 Weeks",
       steps: [
-        "Open a Blocked Account (Sperrkonto).",
-        "Get Admission Letter from German Uni.",
-        "Book appointment at the German Consulate.",
-        "Submit application in person.",
-        "Receive Passport with Visa Stamp."
+        { id: 1, title: "Blocked Account", desc: "Open a Blocked Account (Sperrkonto) with €11,208." },
+        { id: 2, title: "Health Insurance", desc: "Get public or private health insurance valid in Germany." },
+        { id: 3, title: "Videx Form", desc: "Fill the Videx application form online." },
+        { id: 4, title: "VFS Appointment", desc: "Book an appointment at VFS Global or the Embassy." },
+        { id: 5, title: "Submit Files", desc: "Submit your file physically. No interview is usually required." }
       ],
-      docs: ["Admission Letter", "Blocked Account Confirmation", "Health Insurance", "Videx Form"],
-      tips: "Blocked accounts (Expatrio/Coracle) are mandatory. Do this at least 1 month before your appointment."
+      docs: ["Admission Letter", "Blocked Account Proof", "Health Insurance", "Passport", "Videx Form"]
     }
   };
 
-  const data = visaData[selectedCountry];
+  const currentVisa = visaData[country];
 
   return (
-    <div className="min-h-screen bg-slate-50 flex font-sans">
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 flex">
       
       {/* SIDEBAR */}
       <aside className="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col fixed h-full">
         <div className="p-6">
           <Link href="/" className="text-xl font-extrabold text-indigo-600 tracking-tight">Videsi Kalashala</Link>
         </div>
-        
-        <nav className="flex-1 px-4 space-y-2 mt-4 overflow-y-auto h-[calc(100vh-180px)]">
-          <Link href="/dashboard" className="flex items-center gap-3 px-4 py-3 bg-indigo-50 text-indigo-700 rounded-xl font-bold transition">
-            <span>📊</span> Dashboard
+        <nav className="flex-1 px-4 space-y-2 mt-4">
+          <Link href="/dashboard" className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl font-bold transition">
+             <span>←</span> Back to Dashboard
           </Link>
-          
-          <div className="text-xs font-bold text-slate-400 uppercase px-4 mt-4 mb-2">Planning</div>
-          <Link href="/dashboard/roadmap" className="flex items-center gap-3 px-4 py-2 text-slate-600 hover:bg-slate-50 hover:text-indigo-600 rounded-xl font-medium transition"><span>🗺️</span> Roadmap</Link>
-          <Link href="/dashboard/cost-calculator" className="flex items-center gap-3 px-4 py-2 text-slate-600 hover:bg-green-50 hover:text-green-600 rounded-xl font-medium transition"><span>💰</span> Expense Calc</Link>
-          <Link href="/dashboard/scholarships" className="flex items-center gap-3 px-4 py-2 text-slate-600 hover:bg-yellow-50 hover:text-yellow-600 rounded-xl font-medium transition"><span>🏆</span> Scholarships</Link>
-
-          <div className="text-xs font-bold text-slate-400 uppercase px-4 mt-4 mb-2">Action</div>
-          <Link href="/dashboard/universities" className="flex items-center gap-3 px-4 py-2 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-xl font-medium transition"><span>🎓</span> Universities</Link>
-          <Link href="/dashboard/applications" className="flex items-center gap-3 px-4 py-2 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-xl font-medium transition"><span>📂</span> My Applications</Link>
-          <Link href="/dashboard/documents" className="flex items-center gap-3 px-4 py-2 text-slate-600 hover:bg-orange-50 hover:text-orange-600 rounded-xl font-medium transition"><span>🗂️</span> Documents</Link>
-          <Link href="/dashboard/visa" className="flex items-center gap-3 px-4 py-2 text-slate-600 hover:bg-purple-50 hover:text-purple-600 rounded-xl font-medium transition"><span>🛂</span> Visa Info</Link>
-          <Link href="/dashboard/mentors" className="flex items-center gap-3 px-4 py-2 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-xl font-medium transition"><span>💬</span> Mentors</Link>
-          
-          <div className="mt-4 px-4">
-             <Link href="/dashboard/assessment" className="flex items-center gap-3 px-4 py-3 bg-indigo-50 border border-indigo-100 text-indigo-700 rounded-xl font-bold transition"><span>🧩</span> Course Matcher</Link>
+          <div className="px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider mt-6">
+            Visa Center
           </div>
+          <Link href="/dashboard/visa" className="flex items-center gap-3 px-4 py-3 bg-indigo-50 text-indigo-700 rounded-xl font-bold transition">
+             🛂 Visa Guide
+          </Link>
+          <Link href="/dashboard/visa-mock" className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl font-medium transition">
+             🎤 Mock Interview
+          </Link>
         </nav>
       </aside>
 
       {/* MAIN CONTENT */}
       <main className="flex-1 p-8 ml-0 md:ml-64">
+        
         <header className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-800">Visa & Immigration 🛂</h1>
-          <p className="text-slate-500">Step-by-step guides for your student visa application.</p>
+          <h1 className="text-3xl font-bold text-slate-800">Visa Application Guide 🛂</h1>
+          <p className="text-slate-500 mt-1">Step-by-step instructions for your study visa.</p>
         </header>
 
-        <div className="flex flex-col lg:flex-row gap-8">
-          
-          {/* LEFT: COUNTRY SELECTION */}
-          <div className="lg:w-1/4 space-y-3">
-            {Object.keys(visaData).map(country => (
-              <button
-                key={country}
-                onClick={() => setSelectedCountry(country)}
-                className={`w-full text-left p-4 rounded-xl font-bold transition flex justify-between items-center ${
-                  selectedCountry === country 
-                  ? "bg-indigo-600 text-white shadow-lg" 
-                  : "bg-white text-slate-600 hover:bg-indigo-50"
-                }`}
-              >
-                {country}
-                {selectedCountry === country && <span>👉</span>}
-              </button>
-            ))}
-            
-            <div className="mt-8 bg-indigo-50 p-6 rounded-2xl border border-indigo-100">
-              <h4 className="text-indigo-900 font-bold mb-2">Need an Expert?</h4>
-              <p className="text-sm text-indigo-700 mb-4">Visa rejections are painful. Let our counsellors review your file.</p>
-              <Link href="/dashboard/mentors" className="block w-full text-center bg-indigo-600 text-white font-bold py-2 rounded-lg text-sm hover:bg-indigo-700 transition">
-                Book Visa Consultation
-              </Link>
-            </div>
-          </div>
-
-          {/* RIGHT: DETAILS */}
-          <div className="lg:w-3/4 space-y-6">
-            <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
-              <div className="flex justify-between items-start mb-6">
-                <h2 className="text-2xl font-bold text-slate-800">{data.title}</h2>
-                <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Open for Intake</span>
-              </div>
-
-              {/* Steps */}
-              <div className="mb-8">
-                <h3 className="font-bold text-slate-400 uppercase text-xs tracking-wider mb-4">Application Process</h3>
-                <div className="space-y-4">
-                  {data.steps.map((step, i) => (
-                    <div key={i} className="flex gap-4">
-                      <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold shrink-0">
-                        {i + 1}
-                      </div>
-                      <p className="text-slate-700 font-medium pt-1">{step}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* 🟢 NEW: PROCESSING SPEEDS (Only shows if data exists, e.g., for UK) */}
-              {data.processing && (
-                <div className="mb-8 bg-slate-50 p-6 rounded-2xl border border-slate-200">
-                  <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">⚡ Processing Speed & Options</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {data.processing.map((proc, i) => (
-                      <div key={i} className={`p-4 rounded-xl border ${proc.type.includes('Super') ? 'bg-indigo-900 text-white border-indigo-900' : 'bg-white border-slate-200'}`}>
-                        <div className="font-bold text-sm mb-1">{proc.type}</div>
-                        <div className={`text-xl font-bold mb-1 ${proc.type.includes('Super') ? 'text-white' : 'text-indigo-600'}`}>{proc.time}</div>
-                        <div className={`text-xs font-bold mb-2 ${proc.type.includes('Super') ? 'text-indigo-200' : 'text-slate-500'}`}>{proc.cost}</div>
-                        <p className={`text-xs leading-relaxed ${proc.type.includes('Super') ? 'text-indigo-100' : 'text-slate-400'}`}>{proc.desc}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Documents */}
-                <div className="bg-slate-50 p-6 rounded-2xl">
-                   <h3 className="font-bold text-slate-800 mb-3 flex items-center gap-2">
-                     📁 Required Documents
-                   </h3>
-                   <ul className="space-y-2">
-                     {data.docs.map((doc, i) => (
-                       <li key={i} className="text-sm text-slate-600 flex items-center gap-2">
-                         <span className="w-1.5 h-1.5 bg-slate-400 rounded-full"></span>
-                         {doc}
-                       </li>
-                     ))}
-                   </ul>
-                </div>
-
-                {/* Tips */}
-                <div className="bg-yellow-50 p-6 rounded-2xl border border-yellow-100">
-                   <h3 className="font-bold text-yellow-800 mb-3 flex items-center gap-2">
-                     💡 Insider Tip
-                   </h3>
-                   <p className="text-sm text-yellow-700 leading-relaxed italic">
-                     "{data.tips}"
-                   </p>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
+        {/* COUNTRY SELECTOR */}
+        <div className="flex gap-4 mb-8 overflow-x-auto pb-2">
+          {Object.keys(visaData).map((c) => (
+            <button
+              key={c}
+              onClick={() => setCountry(c)}
+              className={`px-6 py-3 rounded-xl font-bold text-sm shadow-sm border transition flex items-center gap-2
+                ${country === c 
+                  ? 'bg-indigo-600 text-white border-indigo-600 ring-2 ring-indigo-200' 
+                  : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}
+              `}
+            >
+              {c === 'USA' ? '🇺🇸 USA' : c === 'UK' ? '🇬🇧 UK' : '🇩🇪 Germany'}
+            </button>
+          ))}
         </div>
+
+        {/* VISA DETAILS CARD */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden animate-fade-in-up">
+          
+          <div className="bg-slate-900 text-white p-8">
+             <div className="flex justify-between items-start">
+               <div>
+                 <h2 className="text-2xl font-bold">{currentVisa.title}</h2>
+                 <p className="text-slate-400 mt-1">Process Duration: <span className="text-white font-bold">{currentVisa.time}</span></p>
+               </div>
+               <div className="text-right">
+                 <p className="text-xs font-bold text-slate-400 uppercase">Est. Cost</p>
+                 <p className="text-xl font-bold text-emerald-400">{currentVisa.cost}</p>
+               </div>
+             </div>
+          </div>
+
+          <div className="p-8 grid md:grid-cols-3 gap-10">
+            
+            {/* LEFT: STEPS */}
+            <div className="md:col-span-2 space-y-8">
+              <h3 className="font-bold text-slate-800 text-lg border-b border-slate-100 pb-2"> Application Steps</h3>
+              <div className="space-y-6">
+                {currentVisa.steps.map((step: any, index: number) => (
+                  <div key={step.id} className="flex gap-4">
+                    <div className="flex flex-col items-center">
+                      <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm">
+                        {index + 1}
+                      </div>
+                      {index !== currentVisa.steps.length - 1 && (
+                        <div className="w-0.5 h-full bg-slate-100 mt-1"></div>
+                      )}
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-slate-800">{step.title}</h4>
+                      <p className="text-sm text-slate-500 mt-1 leading-relaxed">{step.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* RIGHT: DOCUMENTS */}
+            <div>
+               <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 sticky top-6">
+                 <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                   <span>📂</span> Required Docs
+                 </h3>
+                 <ul className="space-y-3">
+                   {currentVisa.docs.map((doc: string, i: number) => (
+                     <li key={i} className="flex items-start gap-2 text-sm text-slate-600">
+                       <span className="text-indigo-500 font-bold">✓</span>
+                       {doc}
+                     </li>
+                   ))}
+                 </ul>
+                 <button className="w-full mt-6 py-3 bg-white border border-slate-300 rounded-xl font-bold text-slate-700 text-sm hover:bg-slate-100 transition">
+                   Download Checklist ⬇
+                 </button>
+               </div>
+            </div>
+
+          </div>
+        </div>
+
       </main>
     </div>
   );

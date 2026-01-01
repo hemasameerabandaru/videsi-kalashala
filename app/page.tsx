@@ -1,6 +1,10 @@
 "use client";
 import React from 'react';
 import Link from 'next/link';
+// 🔐 Import Clerk Components
+import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
+// 🛡️ Import your new Admin Button
+import AdminButton from './components/AdminButton';
 
 export default function LandingPage() {
   return (
@@ -18,14 +22,34 @@ export default function LandingPage() {
             <a href="#process" className="hover:text-indigo-600 transition">How it Works</a>
             <a href="#testimonials" className="hover:text-indigo-600 transition">Success Stories</a>
           </div>
+          
+          {/* 🔐 AUTHENTICATION BUTTONS */}
           <div className="flex items-center gap-4">
-             {/* LOGIN DROPDOWN / BUTTONS */}
-             <Link href="/dashboard" className="text-sm font-bold text-slate-600 hover:text-indigo-600 transition">
-               Student Login
-             </Link>
-             <Link href="/admin/dashboard" className="bg-slate-900 text-white px-5 py-2.5 rounded-full text-sm font-bold hover:bg-slate-800 transition shadow-lg hover:shadow-xl">
-               Staff Login 🔐
-             </Link>
+             
+             {/* Show this when user is LOGGED OUT */}
+             <SignedOut>
+               <SignInButton mode="modal">
+                 <button className="text-sm font-bold text-slate-600 hover:text-indigo-600 transition">
+                   Log In
+                 </button>
+               </SignInButton>
+               <Link href="/sign-up" className="bg-slate-900 text-white px-5 py-2.5 rounded-full text-sm font-bold hover:bg-slate-800 transition shadow-lg hover:shadow-xl">
+                 Get Started 🚀
+               </Link>
+             </SignedOut>
+
+             {/* Show this when user is LOGGED IN */}
+             <SignedIn>
+                
+                {/* 🛡️ SECRET ADMIN BUTTON (Only visible to You) */}
+                <AdminButton />
+
+                <Link href="/dashboard" className="text-sm font-bold text-indigo-600 hover:text-indigo-800 transition mr-2">
+                  Dashboard →
+                </Link>
+                <UserButton afterSignOutUrl="/"/>
+             </SignedIn>
+
           </div>
         </div>
       </nav>

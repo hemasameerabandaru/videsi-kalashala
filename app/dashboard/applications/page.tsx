@@ -1,43 +1,38 @@
 "use client";
-import React from 'react';
-import Link from 'next/link';
+import React, { useState } from 'react';
+import Link from 'next/link'; // 👈 1. Make sure Link is imported
 
-export default function MyApplications() {
-  const applications = [
-    { 
-      id: 1, 
-      university: "Harvard University", 
-      course: "MBA", 
-      country: "USA 🇺🇸", 
-      status: "Under Review", 
-      progress: 50, 
-      date: "Dec 12, 2024",
-      image: "https://images.pexels.com/photos/256455/pexels-photo-256455.jpeg?auto=compress&cs=tinysrgb&w=200"
-    },
-    { 
-      id: 2, 
-      university: "Technical University of Munich", 
-      course: "M.Sc. Informatics", 
-      country: "Germany 🇩🇪", 
-      status: "Offer Received", 
-      progress: 100, 
-      date: "Nov 28, 2024",
-      image: "https://images.pexels.com/photos/256490/pexels-photo-256490.jpeg?auto=compress&cs=tinysrgb&w=200"
-    },
-    { 
-      id: 3, 
-      university: "University of Toronto", 
-      course: "Data Science", 
-      country: "Canada 🇨🇦", 
-      status: "Pending Documents", 
-      progress: 25, 
-      date: "Jan 05, 2025",
-      image: "https://images.pexels.com/photos/256395/pexels-photo-256395.jpeg?auto=compress&cs=tinysrgb&w=200"
+export default function ApplicationTracker() {
+  
+  // Mock Applications Data
+  const [apps, setApps] = useState([
+    { id: 1, uni: "Arizona State University", course: "MS in CS", country: "USA 🇺🇸", status: "applied", date: "Dec 12" },
+    { id: 2, uni: "Northeastern University", course: "Data Science", country: "USA 🇺🇸", status: "offer", date: "Jan 05" },
+    { id: 3, uni: "University of East London", course: "MBA", country: "UK 🇬🇧", status: "rejected", date: "Nov 20" },
+    { id: 4, uni: "TU Munich", course: "Robotics", country: "Germany 🇩🇪", status: "in-progress", date: "Draft" },
+  ]);
+
+  // Status Colors Helper
+  const getStatusColor = (status: string) => {
+    switch(status) {
+      case 'offer': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+      case 'rejected': return 'bg-red-100 text-red-700 border-red-200';
+      case 'applied': return 'bg-blue-100 text-blue-700 border-blue-200';
+      default: return 'bg-amber-100 text-amber-700 border-amber-200';
     }
-  ];
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch(status) {
+      case 'offer': return '🎉 Offer Received';
+      case 'rejected': return '❌ Rejected';
+      case 'applied': return '✅ Applied';
+      default: return '⏳ In Progress';
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex font-sans">
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 flex">
       
       {/* SIDEBAR */}
       <aside className="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col fixed h-full">
@@ -45,70 +40,108 @@ export default function MyApplications() {
           <Link href="/" className="text-xl font-extrabold text-indigo-600 tracking-tight">Videsi Kalashala</Link>
         </div>
         <nav className="flex-1 px-4 space-y-2 mt-4">
-          <Link href="/dashboard" className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl font-medium transition">
-            <span>📊</span> Dashboard
+          <Link href="/dashboard" className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl font-bold transition">
+             <span>←</span> Back to Dashboard
           </Link>
-          <Link href="/dashboard/universities" className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl font-medium transition">
-            <span>🎓</span> Universities
-          </Link>
+          <div className="px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider mt-6">
+            Track Progress
+          </div>
           <Link href="/dashboard/applications" className="flex items-center gap-3 px-4 py-3 bg-indigo-50 text-indigo-700 rounded-xl font-bold transition">
-            <span>📂</span> My Applications
-          </Link>
-          {/* ADDED MENTORS LINK */}
-          <Link href="/dashboard/mentors" className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl font-medium transition">
-            <span>💬</span> Mentors
+             🚀 My Applications
           </Link>
         </nav>
       </aside>
 
       {/* MAIN CONTENT */}
       <main className="flex-1 p-8 ml-0 md:ml-64">
-        <header className="mb-8 flex justify-between items-center">
+        
+        <header className="mb-8 flex justify-between items-end">
           <div>
-            <h1 className="text-3xl font-bold text-slate-800">Track Applications 📂</h1>
-            <p className="text-slate-500">Monitor the status of your university applications.</p>
+            <h1 className="text-3xl font-bold text-slate-800">My Applications 🚀</h1>
+            <p className="text-slate-500 mt-1">Track the status of your university applications.</p>
           </div>
-          <Link href="/dashboard/universities" className="bg-slate-900 text-white px-5 py-2 rounded-lg font-bold hover:bg-indigo-600 transition">
-            + New Application
+          
+          {/* 👇 FIXED: This button now lets you add a NEW application */}
+          <Link href="/dashboard/universities" className="bg-slate-900 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-800 transition shadow-lg flex items-center gap-2">
+            <span>+</span> New Application
           </Link>
         </header>
 
-        <div className="space-y-6">
-          {applications.map((app) => (
-            <div key={app.id} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition">
-              <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
-                <div className="w-24 h-24 md:w-32 md:h-24 rounded-xl overflow-hidden shrink-0 border border-slate-100">
-                  <img src={app.image} alt={app.university} className="w-full h-full object-cover"/>
+        {/* STATS OVERVIEW */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+            <p className="text-xs font-bold text-slate-400 uppercase">Total Apps</p>
+            <p className="text-2xl font-extrabold text-slate-800">4</p>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+            <p className="text-xs font-bold text-slate-400 uppercase">Offers</p>
+            <p className="text-2xl font-extrabold text-emerald-600">1</p>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+            <p className="text-xs font-bold text-slate-400 uppercase">Pending</p>
+            <p className="text-2xl font-extrabold text-blue-600">1</p>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+            <p className="text-xs font-bold text-slate-400 uppercase">Drafts</p>
+            <p className="text-2xl font-extrabold text-amber-500">1</p>
+          </div>
+        </div>
+
+        {/* APPLICATION LIST */}
+        <div className="space-y-4">
+          {apps.map((app) => (
+            <div key={app.id} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition group flex flex-col md:flex-row items-center justify-between gap-4">
+              
+              {/* Left: Info */}
+              <div className="flex items-center gap-4 w-full md:w-auto">
+                <div className="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center text-2xl border border-slate-100">
+                  🏛️
                 </div>
-                <div className="flex-1 w-full">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <h3 className="text-lg font-bold text-slate-800">{app.university}</h3>
-                      <p className="text-slate-500 text-sm">{app.course} • {app.country}</p>
-                    </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                      app.status === 'Offer Received' ? 'bg-emerald-100 text-emerald-700' :
-                      app.status === 'Under Review' ? 'bg-indigo-100 text-indigo-700' :
-                      'bg-orange-100 text-orange-700'
-                    }`}>
-                      {app.status}
-                    </span>
-                  </div>
-                  <div className="mt-4">
-                    <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-                      <div 
-                        className={`h-2.5 rounded-full transition-all duration-1000 ${
-                          app.progress === 100 ? 'bg-emerald-500' : 'bg-indigo-600'
-                        }`} 
-                        style={{ width: `${app.progress}%` }}
-                      ></div>
-                    </div>
+                <div>
+                  <h3 className="font-bold text-lg text-slate-800">{app.uni}</h3>
+                  <div className="flex items-center gap-2 text-sm text-slate-500 font-medium">
+                    <span>{app.country}</span>
+                    <span>•</span>
+                    <span>{app.course}</span>
                   </div>
                 </div>
               </div>
+
+              {/* Middle: Timeline/Date */}
+              <div className="text-center md:text-left">
+                 <p className="text-xs font-bold text-slate-400 uppercase mb-1">Last Update</p>
+                 <p className="font-bold text-slate-700">{app.date}</p>
+              </div>
+
+              {/* Right: Status & Action */}
+              <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
+                <span className={`px-4 py-2 rounded-lg text-xs font-bold border uppercase tracking-wide ${getStatusColor(app.status)}`}>
+                  {getStatusLabel(app.status)}
+                </span>
+                
+                {/* 👇 FIXED: Arrow is now a Link (Going to Uni Finder for now) */}
+                <Link href="/dashboard/universities" className="text-slate-400 hover:text-indigo-600 font-bold px-2 text-xl">
+                  →
+                </Link>
+
+              </div>
+
             </div>
           ))}
         </div>
+
+        {/* EMPTY STATE */}
+        {apps.length === 0 && (
+          <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-slate-300">
+            <div className="text-4xl mb-4">📝</div>
+            <h3 className="font-bold text-slate-800 text-lg">No Applications Yet</h3>
+            <p className="text-slate-500 mb-6">Start applying to universities to track them here.</p>
+            <Link href="/dashboard/universities" className="text-indigo-600 font-bold hover:underline">
+              Go to University Finder →
+            </Link>
+          </div>
+        )}
+
       </main>
     </div>
   );

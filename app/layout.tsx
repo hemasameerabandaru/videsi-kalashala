@@ -1,17 +1,13 @@
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google"; // Importing the font
+import { Inter } from "next/font/google";
 import "./globals.css";
+import { ClerkProvider } from '@clerk/nextjs';
 
-// Configure the font settings (weights 400=regular, 600=semi-bold, 700=bold)
-const poppins = Poppins({ 
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-poppins",
-});
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Videsi Kalashala",
-  description: "The world's first real-time study abroad consultancy.",
+  description: "Your Study Abroad Partner",
 };
 
 export default function RootLayout({
@@ -20,11 +16,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      {/* Applying the font to the entire body of the website */}
-      <body className={`${poppins.className} antialiased`}>
-        {children}
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en">
+        <body className={inter.className}>{children}</body>
+      </html>
+    </ClerkProvider>
   );
 }

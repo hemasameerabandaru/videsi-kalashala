@@ -2,154 +2,232 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 
-export default function CourseMatcher() {
-  const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState<any>({});
-  const [result, setResult] = useState<any>(null);
+export default function ProfileAssessment() {
+  
+  // State for Inputs
+  const [cgpa, setCgpa] = useState("");
+  const [gre, setGre] = useState("");
+  const [ielts, setIelts] = useState("");
+  const [experience, setExperience] = useState("");
+  const [backlogs, setBacklogs] = useState("0");
 
-  const questions = [
-    {
-      id: "budget",
-      question: "💰 What is your yearly tuition budget?",
-      options: [
-        { label: "Low (Under ₹15L)", value: "low" },
-        { label: "Medium (₹15L - ₹30L)", value: "med" },
-        { label: "High (₹30L+)", value: "high" }
-      ]
-    },
-    {
-      id: "interest",
-      question: "🧠 What interests you the most?",
-      options: [
-        { label: "Coding & Tech", value: "tech" },
-        { label: "Business & Management", value: "biz" },
-        { label: "Art & Design", value: "art" },
-        { label: "Science & Research", value: "sci" }
-      ]
-    },
-    {
-      id: "weather",
-      question: "🌤️ What kind of weather do you prefer?",
-      options: [
-        { label: "I love the Cold / Snow", value: "cold" },
-        { label: "Sunny & Warm", value: "warm" },
-        { label: "I don't care", value: "any" }
-      ]
-    },
-    {
-      id: "work",
-      question: "💼 Post-study goal?",
-      options: [
-        { label: "Settle there permanently (PR)", value: "pr" },
-        { label: "Work for few years then return", value: "work" },
-        { label: "High Salary is priority", value: "money" }
-      ]
-    }
-  ];
+  const [result, setResult] = useState<null | string>(null);
 
-  const handleAnswer = (key: string, value: string) => {
-    setAnswers({ ...answers, [key]: value });
-    if (step < questions.length - 1) {
-      setStep(step + 1);
-    } else {
-      calculateResult({ ...answers, [key]: value });
-    }
-  };
+  // Mock "AI" Calculation
+  const handleEvaluate = (e: React.FormEvent) => {
+    e.preventDefault();
+    setResult("analyzing");
+    
+    // Simulate a delay for "AI Analysis"
+    setTimeout(() => {
+      const gpaScore = parseFloat(cgpa);
+      const greScore = parseInt(gre) || 0;
 
-  const calculateResult = (finalAnswers: any) => {
-    // Simple Logic for Demo
-    let suggestion = { country: "USA 🇺🇸", course: "MS in Computer Science", reason: "Best for high salaries and tech jobs." };
-
-    if (finalAnswers.interest === 'biz') {
-      suggestion = { country: "UK 🇬🇧", course: "MBA / MIM", reason: "Short 1-year masters with great networking." };
-    }
-    if (finalAnswers.budget === 'low' && finalAnswers.interest === 'tech') {
-      suggestion = { country: "Germany 🇩🇪", course: "MSc Data Science", reason: "Almost zero tuition fees at public universities." };
-    }
-    if (finalAnswers.work === 'pr' || finalAnswers.weather === 'cold') {
-      suggestion = { country: "Canada 🇨🇦", course: "PG Diploma / Masters", reason: "Simplest path to Permanent Residency (PR)." };
-    }
-    if (finalAnswers.weather === 'warm' && finalAnswers.interest === 'tech') {
-      suggestion = { country: "Australia 🇦🇺", course: "Master of IT", reason: "Great lifestyle, weather, and 3-year post-study work visa." };
-    }
-
-    setResult(suggestion);
-    setStep(questions.length);
+      if (gpaScore > 8.5 && greScore > 315) {
+        setResult("tier1"); // Ivy League / Top Tier
+      } else if (gpaScore > 7.5 && greScore > 300) {
+        setResult("tier2"); // Good Public Universities
+      } else {
+        setResult("tier3"); // Safe Options
+      }
+    }, 1500);
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex font-sans">
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 flex">
       
       {/* SIDEBAR */}
       <aside className="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col fixed h-full">
         <div className="p-6">
           <Link href="/" className="text-xl font-extrabold text-indigo-600 tracking-tight">Videsi Kalashala</Link>
         </div>
-        <nav className="flex-1 px-4 space-y-2 mt-4 overflow-y-auto h-[calc(100vh-180px)]">
-          <Link href="/dashboard" className="flex items-center gap-3 px-4 py-2 text-slate-600 hover:bg-slate-50 rounded-xl font-medium transition">
+        <nav className="flex-1 px-4 space-y-2 mt-4">
+          <Link href="/dashboard" className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-xl font-bold transition">
              <span>←</span> Back to Dashboard
+          </Link>
+          <div className="px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider mt-6">
+            Analysis
+          </div>
+          <Link href="/dashboard/assessment" className="flex items-center gap-3 px-4 py-3 bg-indigo-50 text-indigo-700 rounded-xl font-bold transition">
+             📊 Profile Assessment
           </Link>
         </nav>
       </aside>
 
       {/* MAIN CONTENT */}
-      <main className="flex-1 p-8 ml-0 md:ml-64 flex flex-col justify-center items-center min-h-[90vh]">
+      <main className="flex-1 p-8 ml-0 md:ml-64">
         
-        {step < questions.length ? (
-          <div className="w-full max-w-xl animate-fade-in-up">
-            <div className="mb-8">
-               <div className="flex justify-between text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
-                 <span>Question {step + 1} of {questions.length}</span>
-                 <span>{Math.round(((step) / questions.length) * 100)}%</span>
-               </div>
-               <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
-                 <div className="h-full bg-indigo-600 transition-all duration-500" style={{ width: `${((step) / questions.length) * 100}%` }}></div>
-               </div>
-            </div>
+        <header className="mb-8">
+          <h1 className="text-3xl font-bold text-slate-800">Profile Assessment 📊</h1>
+          <p className="text-slate-500 mt-1">Check your eligibility for top universities instantly.</p>
+        </header>
 
-            <h1 className="text-3xl font-bold text-slate-800 mb-8 text-center leading-tight">
-              {questions[step].question}
-            </h1>
+        <div className="grid lg:grid-cols-2 gap-8">
+          
+          {/* LEFT: INPUT FORM */}
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+             <h2 className="font-bold text-lg text-slate-800 mb-6">Enter Your Academic Details</h2>
+             
+             <form onSubmit={handleEvaluate} className="space-y-6">
+               
+               <div className="grid grid-cols-2 gap-6">
+                 <div>
+                   <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Undergrad CGPA (out of 10)</label>
+                   <input 
+                     type="number" step="0.01" max="10" required placeholder="e.g. 8.5"
+                     className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:ring-2 focus:ring-indigo-600 outline-none"
+                     value={cgpa} onChange={e => setCgpa(e.target.value)}
+                   />
+                 </div>
+                 <div>
+                   <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Backlogs History</label>
+                   <select 
+                     className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:ring-2 focus:ring-indigo-600 outline-none"
+                     value={backlogs} onChange={e => setBacklogs(e.target.value)}
+                   >
+                     <option value="0">0 (Clean Record)</option>
+                     <option value="1-3">1 - 3</option>
+                     <option value="4+">4 or more</option>
+                   </select>
+                 </div>
+               </div>
 
-            <div className="grid gap-4">
-              {questions[step].options.map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => handleAnswer(questions[step].id, option.value)}
-                  className="p-6 rounded-2xl border-2 border-slate-200 hover:border-indigo-600 hover:bg-indigo-50 transition font-bold text-slate-700 text-left text-lg group"
-                >
-                  <span className="inline-block w-6 h-6 rounded-full border-2 border-slate-300 mr-4 group-hover:border-indigo-600 group-hover:bg-indigo-600"></span>
-                  {option.label}
-                </button>
-              ))}
-            </div>
+               <div className="grid grid-cols-2 gap-6">
+                 <div>
+                   <label className="block text-xs font-bold text-slate-500 uppercase mb-2">GRE Score (Optional)</label>
+                   <input 
+                     type="number" max="340" placeholder="e.g. 320"
+                     className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:ring-2 focus:ring-indigo-600 outline-none"
+                     value={gre} onChange={e => setGre(e.target.value)}
+                   />
+                 </div>
+                 <div>
+                   <label className="block text-xs font-bold text-slate-500 uppercase mb-2">IELTS / TOEFL</label>
+                   <input 
+                     type="number" step="0.5" max="9" required placeholder="e.g. 7.5"
+                     className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:ring-2 focus:ring-indigo-600 outline-none"
+                     value={ielts} onChange={e => setIelts(e.target.value)}
+                   />
+                 </div>
+               </div>
+
+               <div>
+                 <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Work Experience (Years)</label>
+                 <input 
+                   type="number" step="0.5" placeholder="e.g. 2.5"
+                   className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:ring-2 focus:ring-indigo-600 outline-none"
+                   value={experience} onChange={e => setExperience(e.target.value)}
+                 />
+               </div>
+
+               <button 
+                 type="submit" 
+                 disabled={result === 'analyzing'}
+                 className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition shadow-lg disabled:opacity-70 disabled:cursor-wait"
+               >
+                 {result === 'analyzing' ? 'Analyzing Profile...' : 'Evaluate My Profile 🚀'}
+               </button>
+
+             </form>
           </div>
-        ) : (
-          <div className="w-full max-w-lg text-center animate-bounce-in">
-            <div className="text-6xl mb-6">🎉</div>
-            <h2 className="text-xl font-bold text-slate-400 uppercase tracking-widest mb-2">We found your match!</h2>
-            <h1 className="text-4xl font-extrabold text-slate-900 mb-6">
-              You should study in <span className="text-indigo-600">{result.country}</span>
-            </h1>
+
+          {/* RIGHT: RESULTS AREA */}
+          <div className="space-y-6">
             
-            <div className="bg-white p-8 rounded-3xl shadow-xl border border-slate-100 mb-8 transform hover:scale-105 transition duration-300">
-               <p className="text-sm font-bold text-slate-400 uppercase mb-2">Recommended Course</p>
-               <p className="text-2xl font-bold text-slate-800 mb-4">{result.course}</p>
-               <div className="h-px w-full bg-slate-100 mb-4"></div>
-               <p className="text-slate-600 italic">" {result.reason} "</p>
-            </div>
+            {/* 1. INITIAL STATE */}
+            {!result && (
+              <div className="h-full bg-indigo-50 border-2 border-dashed border-indigo-200 rounded-2xl flex flex-col items-center justify-center text-center p-8">
+                <div className="text-6xl mb-4">🤖</div>
+                <h3 className="font-bold text-indigo-900 text-xl">AI Assistant Waiting</h3>
+                <p className="text-indigo-600/70 mt-2 max-w-xs">Fill in your academic details on the left, and I will predict your university admission chances.</p>
+              </div>
+            )}
 
-            <div className="flex gap-4 justify-center">
-              <button onClick={() => {setStep(0); setAnswers({});}} className="px-6 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-200 transition">
-                Retake Quiz 🔄
-              </button>
-              <Link href="/dashboard/universities" className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg">
-                View Universities 🎓
-              </Link>
-            </div>
+            {/* 2. LOADING STATE */}
+            {result === 'analyzing' && (
+              <div className="h-full bg-white border border-slate-200 rounded-2xl flex flex-col items-center justify-center p-8">
+                <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-6"></div>
+                <h3 className="font-bold text-slate-800 text-xl animate-pulse">Scanning Universities...</h3>
+                <p className="text-slate-400 mt-2">Checking GPAs against 500+ databases.</p>
+              </div>
+            )}
+
+            {/* 3. TIER 1 RESULT (High) */}
+            {result === 'tier1' && (
+              <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-lg animate-fade-in-up">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center text-3xl">🌟</div>
+                  <div>
+                    <h3 className="font-bold text-emerald-800 text-2xl">Excellent Profile!</h3>
+                    <p className="text-slate-500 font-medium">You are a top candidate.</p>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                    <p className="text-xs font-bold text-slate-400 uppercase mb-1">Ambitious (Dream)</p>
+                    <p className="font-bold text-slate-800">Columbia, Cornell, CMU</p>
+                  </div>
+                  <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-100">
+                    <p className="text-xs font-bold text-emerald-600 uppercase mb-1">Target (Good Chance)</p>
+                    <p className="font-bold text-emerald-900">Northeastern, ASU, USC</p>
+                  </div>
+                  <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
+                    <p className="text-xs font-bold text-blue-600 uppercase mb-1">Safe (Guaranteed)</p>
+                    <p className="font-bold text-blue-900">UT Dallas, RIT, UIC</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 4. TIER 2 RESULT (Medium) */}
+            {result === 'tier2' && (
+              <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-lg animate-fade-in-up">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center text-3xl">👍</div>
+                  <div>
+                    <h3 className="font-bold text-indigo-900 text-2xl">Strong Profile</h3>
+                    <p className="text-slate-500 font-medium">You have great options available.</p>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                    <p className="text-xs font-bold text-slate-400 uppercase mb-1">Target (Good Chance)</p>
+                    <p className="font-bold text-slate-800">CSU Long Beach, NJIT, SUNY Buffalo</p>
+                  </div>
+                  <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-100">
+                    <p className="text-xs font-bold text-indigo-600 uppercase mb-1">Recommended</p>
+                    <p className="font-bold text-indigo-900">Improve GRE by +5 points to unlock Top 50.</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 5. TIER 3 RESULT (Low) */}
+            {result === 'tier3' && (
+              <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-lg animate-fade-in-up">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center text-3xl">📈</div>
+                  <div>
+                    <h3 className="font-bold text-orange-900 text-2xl">Growth Potential</h3>
+                    <p className="text-slate-500 font-medium">Focus on SOP and Experience.</p>
+                  </div>
+                </div>
+                <div className="p-4 bg-orange-50 rounded-xl border border-orange-100 mb-4">
+                  <p className="text-xs font-bold text-orange-700 uppercase mb-1">Strategy</p>
+                  <p className="text-sm font-bold text-orange-900">Your GPA is slightly low. We recommend applying to universities that waive GRE or focus on holistic review.</p>
+                </div>
+                
+                {/* 👇 FIXED: This is now a LINK to /dashboard/mentors */}
+                <Link href="/dashboard/mentors" className="block w-full text-center py-3 bg-white border border-slate-200 font-bold text-slate-600 rounded-xl hover:bg-slate-50 transition">
+                   Talk to a Counselor for Help →
+                </Link>
+
+              </div>
+            )}
+
           </div>
-        )}
 
+        </div>
       </main>
     </div>
   );
