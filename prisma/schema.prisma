@@ -1,14 +1,79 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
-generator client {
-  provider = "prisma-client"
-  output   = "../app/generated/prisma"
-}
-
+// This connects to your database
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// This helps Prisma generate JavaScript code
+generator client {
+  provider = "prisma-client-js"
+}
+
+// 1. STUDENT MODEL (Profile) 👨‍🎓
+model Student {
+  id             String   @id @default(uuid()) // Unique ID
+  clerkId        String   @unique              // Link to Login
+  firstName      String?
+  lastName       String?
+  email          String   @unique
+  phone          String?
+  targetCountry  String?
+  degree         String?  // Masters/Bachelors
+  intake         String?  // Fall 2026
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relationships (What belongs to this student?)
+  applications   Application[]
+  bookings       Booking[]
+  documents      Document[]
+}
+
+// 2. UNIVERSITY MODEL 🏛️
+model University {
+  id        Int      @id @default(autoincrement())
+  name      String
+  country   String
+  rank      String
+  fees      String
+  logo      String?  @default("🏛️")
+  
+  // Relationships
+  applications Application[]
+}
+
+// 3. APPLICATION TRACKER 🚀
+model Application {
+  id           Int      @id @default(autoincrement())
+  status       String   @default("Draft") // Applied, Offer, Rejected
+  appliedDate  DateTime @default(now())
+
+  // Links
+  studentId    String
+  student      Student    @relation(fields: [studentId], references: [id])
+  universityId Int
+  university   University @relation(fields: [universityId], references: [id])
+}
+
+// 4. BOOKINGS (Mentorship) 📅
+model Booking {
+  id        Int      @id @default(autoincrement())
+  type      String   // Visa Mock, Profile Eval
+  date      DateTime
+  status    String   @default("Pending") // Confirmed, Completed
+  
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id])
+}
+
+// 5. DOCUMENTS 📂
+model Document {
+  id        Int      @id @default(autoincrement())
+  name      String   // Passport, Marksheet
+  url       String   // Link to file storage
+  status    String   @default("Uploaded")
+  
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id])
 }
