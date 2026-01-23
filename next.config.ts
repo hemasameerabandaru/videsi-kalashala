@@ -1,6 +1,7 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  output: "standalone", // 👈 Add this line
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  output: "standalone", // 👈 Required for Docker
   images: {
     remotePatterns: [
       {
@@ -9,7 +10,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'cdn-icons-png.flaticon.com', // If you used the icon URLs I gave earlier
+        hostname: 'cdn-icons-png.flaticon.com',
       },
     ],
   },
