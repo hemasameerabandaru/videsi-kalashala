@@ -5,48 +5,43 @@ import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { TextureLoader } from "three";
 
-function Earth() {
+function SnapStyleEarth() {
   const earthRef = useRef<THREE.Mesh>(null);
-  const cloudsRef = useRef<THREE.Mesh>(null);
 
-  // Load High-Res Textures
-  const [colorMap, normalMap, cloudsMap] = useLoader(TextureLoader, [
-    "https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_atmos_2048.jpg",
-    "https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_normal_2048.jpg",
-    "https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_clouds_1024.png",
+  // 1. LOAD TEXTURE
+  // Ideally, use a local high-res map. For now, this standard one works.
+  const [colorMap] = useLoader(TextureLoader, [
+    "https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_atmos_2048.jpg"
   ]);
 
-  useFrame(() => {
-    // Rotation Logic
-    if (earthRef.current) earthRef.current.rotation.y += 0.001;
-    if (cloudsRef.current) cloudsRef.current.rotation.y += 0.0015;
+  useFrame(({ clock }) => {
+    if (earthRef.current) {
+      // Slow, smooth rotation
+      earthRef.current.rotation.y = clock.getElapsedTime() * 0.05;
+    }
   });
 
   return (
     <group>
-      {/* 🌍 1. MAIN EARTH */}
-      {/* Reduced scale slightly (2.8 -> 2.4) so it doesn't get cut off */}
-      <mesh ref={earthRef} scale={[2.4, 2.4, 2.4]}>
+      {/* 🌍 THE GLOBE - REDUCED SCALE TO FIT */}
+      <mesh ref={earthRef} scale={[3.0, 3.0, 3.0]}> 
         <sphereGeometry args={[1, 64, 64]} />
+        
+        {/* SNAPCHAT STYLE COLORS */}
         <meshStandardMaterial
           map={colorMap}
-          normalMap={normalMap}
-          roughness={0.7}
+          color="#86efac"      // 🟢 Land: Pastel Green
+          emissive="#22d3ee"   // 🔵 Glow: Cyan Blue
+          emissiveIntensity={0.2}
+          roughness={0.6}
           metalness={0.1}
-          color="#ffffff"
         />
       </mesh>
 
-      {/* ☁️ 2. CLOUDS */}
-      <mesh ref={cloudsRef} scale={[2.43, 2.43, 2.43]}>
+      {/* 🌊 OCEAN FILL */}
+      <mesh scale={[2.15, 2.15, 2.15]}>
         <sphereGeometry args={[1, 64, 64]} />
-        <meshStandardMaterial
-          map={cloudsMap}
-          transparent={true}
-          opacity={0.4}
-          blending={THREE.AdditiveBlending}
-          side={THREE.DoubleSide}
-        />
+        <meshBasicMaterial color="#0ea5e9" /> {/* Deep Blue Ocean */}
       </mesh>
     </group>
   );
@@ -56,26 +51,31 @@ export default function CodeGlobe() {
   return (
     <div className="w-full h-full flex items-center justify-center">
       {/* 👇 KEY FIX: 
-         - Moved Camera Back (z: 8.5)
-         - Adjusted FOV (45)
-         This ensures the globe fits INSIDE the view without clipping edges.
+         - Changed position z from 6 -> 8.5 (Moves camera back)
+         - This prevents the globe from being cut off at the edges
       */}
-      <Canvas camera={{ position: [0, 0, 8.5], fov: 45 }} gl={{ alpha: true, antialias: true }} className="bg-transparent">
-
-        {/* BRIGHT STUDIO LIGHTING */}
-        <ambientLight intensity={3.0} color="#ffffff" />
-        <directionalLight position={[10, 10, 5]} intensity={2.0} color="#ffffff" />
-        <spotLight position={[-5, 5, -5]} intensity={5} color="#818cf8" angle={0.5} />
-
+      <Canvas 
+        camera={{ position: [0, 0, 10.0], fov: 45 }} 
+        gl={{ alpha: true, antialias: true }} 
+        className="bg-transparent"
+      >
+        
+        {/* LIGHTING */}
+        <ambientLight intensity={3.0} color="#ffffff" /> 
+        <directionalLight position={[10, 10, 5]} intensity={1.5} color="#ffffff" />
+        
         <Suspense fallback={null}>
-          <Earth />
+          <SnapStyleEarth />
         </Suspense>
 
-        <OrbitControls
-          enableZoom={false}
+        {/* CONTROLS */}
+        <OrbitControls 
+          enableZoom={true} 
+          minDistance={3.5} 
+          maxDistance={12}  
           enablePan={false}
-          autoRotate={true}
-          autoRotateSpeed={0.5}
+          autoRotate={false}
+          rotateSpeed={0.6}
         />
       </Canvas>
     </div>
