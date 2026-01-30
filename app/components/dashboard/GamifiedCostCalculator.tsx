@@ -1,8 +1,8 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
+import { useUser } from "@clerk/nextjs"; // 👈 Added Clerk Hook
 
 // --- 🧠 AI KNOWLEDGE BASE (COSTS) ---
-// (Kept the same data, just restyled the output container)
 const COST_KNOWLEDGE = {
   USA: "🇺🇸 USA Costs:\n- Tuition: $30,000 - $60,000 / year\n- Rent: $800 - $2,500 / month (depends on city)\n- Groceries: $300 - $500 / month\n- Note: Health insurance is expensive ($2k/year)!",
   UK: "🇬🇧 UK Costs:\n- Tuition: £15,000 - £35,000 / year\n- Rent: £600 - £1,500 / month (London is pricey!)\n- Groceries: £200 - £300 / month\n- Note: NHS Surcharge is around £470/year.",
@@ -22,6 +22,8 @@ const CURRENCIES = {
 };
 
 export default function GamifiedCostCalculator() {
+  const { user } = useUser(); // 👈 Get User Data
+  
   // State
   const [currency, setCurrency] = useState("USD");
   const [tuition, setTuition] = useState(30000);
@@ -29,12 +31,23 @@ export default function GamifiedCostCalculator() {
   const [food, setFood] = useState(400);
   const [misc, setMisc] = useState(200);
   const [showAI, setShowAI] = useState(false);
+  const [userBudget, setUserBudget] = useState(0);
+
+  // 🟢 EFFECT: Fetch Profile Budget
+  useEffect(() => {
+    if (user) {
+        const meta = user.publicMetadata as any;
+        const savedBudget = parseInt(meta?.budget?.amount || "0");
+        if (savedBudget > 0) setUserBudget(savedBudget);
+    }
+  }, [user]);
 
   // Derived Values
   const currentSymbol = CURRENCIES[currency as keyof typeof CURRENCIES].symbol;
   const yearlyRent = rent * 12;
   const yearlyLiving = (food + misc) * 12;
   const totalCost = tuition + yearlyRent + yearlyLiving;
+  const isOverBudget = userBudget > 0 && totalCost > userBudget;
 
   // Chart Data (Using specific pure pastel hex codes)
   const pTuition = (tuition / totalCost) * 100;
@@ -92,7 +105,6 @@ export default function GamifiedCostCalculator() {
                      setValue={setTuition} 
                      min={0} max={100000} step={1000} 
                      symbol={currentSymbol}
-                     // Pastel Blue theme
                      textColor="text-blue-400"
                      trackColor="bg-blue-100"
                      thumbColor="accent-blue-300"
@@ -103,7 +115,6 @@ export default function GamifiedCostCalculator() {
                      setValue={setRent} 
                      min={0} max={5000} step={50} 
                      symbol={currentSymbol}
-                     // Pastel Purple theme
                      textColor="text-purple-400"
                      trackColor="bg-purple-100"
                      thumbColor="accent-purple-300"
@@ -114,7 +125,6 @@ export default function GamifiedCostCalculator() {
                      setValue={setFood} 
                      min={0} max={2000} step={50} 
                      symbol={currentSymbol}
-                     // Pastel Pink theme
                      textColor="text-pink-400"
                      trackColor="bg-pink-100"
                      thumbColor="accent-pink-300"
@@ -125,7 +135,6 @@ export default function GamifiedCostCalculator() {
                      setValue={setMisc} 
                      min={0} max={1000} step={50} 
                      symbol={currentSymbol}
-                     // Pastel Orange theme
                      textColor="text-orange-400"
                      trackColor="bg-orange-100"
                      thumbColor="accent-orange-300"
@@ -133,9 +142,9 @@ export default function GamifiedCostCalculator() {
                </div>
             </div>
 
-            {/* AI Helper Banner (Very soft pastel) */}
+            {/* AI Helper Banner */}
             <div className="bg-gradient-to-r from-sky-50 to-indigo-50 border border-indigo-100 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left cursor-pointer hover:shadow-md transition-all"
-                 onClick={() => setShowAI(true)}>
+               onClick={() => setShowAI(true)}>
                <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-2xl shadow-sm">🤖</div>
                   <div>
@@ -164,6 +173,19 @@ export default function GamifiedCostCalculator() {
                </div>
                <p className="text-slate-500 text-xs font-bold bg-slate-100/80 px-4 py-1.5 rounded-full">1 Year Estimate</p>
 
+               {/* 🟢 NEW: BUDGET HEALTH INDICATOR */}
+               {userBudget > 0 && (
+                  <div className={`mt-4 px-4 py-2 rounded-xl text-xs font-bold border flex items-center gap-2
+                     ${isOverBudget 
+                        ? 'bg-red-50 border-red-100 text-red-600' 
+                        : 'bg-green-50 border-green-100 text-green-600'}`}>
+                     <span>{isOverBudget ? '⚠️' : '✅'}</span>
+                     {isOverBudget 
+                        ? `Over budget by ${currentSymbol}${(totalCost - userBudget).toLocaleString()}` 
+                        : "Within your budget!"}
+                  </div>
+               )}
+
                {/* Pastel Donut Chart */}
                <div className="mt-8 relative w-64 h-64 rounded-full flex items-center justify-center bg-slate-50 shadow-inner p-4"
                   style={{
@@ -179,7 +201,7 @@ export default function GamifiedCostCalculator() {
                   </div>
                </div>
 
-               {/* Legend with Pastel Colors */}
+               {/* Legend */}
                <div className="mt-8 w-full space-y-3 bg-slate-50/80 p-5 rounded-2xl backdrop-blur-sm border border-slate-100">
                   <LegendItem color="bg-blue-300" label="Tuition" value={tuition} symbol={currentSymbol} />
                   <LegendItem color="bg-purple-300" label="Housing (Yearly)" value={yearlyRent} symbol={currentSymbol} />
@@ -197,7 +219,7 @@ export default function GamifiedCostCalculator() {
   );
 }
 
-// --- SUB-COMPONENTS ---
+// --- SUB-COMPONENTS (UNCHANGED) ---
 
 function SliderControl({ label, value, setValue, min, max, step, symbol, textColor, trackColor, thumbColor }: any) {
    return (
@@ -211,10 +233,8 @@ function SliderControl({ label, value, setValue, min, max, step, symbol, textCol
             min={min} max={max} step={step} 
             value={value} 
             onChange={(e) => setValue(parseInt(e.target.value))}
-            // Using tailwind utilities for track color. Thumb color relies on browser default accent or custom CSS if needed.
-            // For simplicity and tailwind compatibility, we use accent color utility.
             className={`w-full h-4 ${trackColor} rounded-lg appearance-none cursor-pointer ${thumbColor}`}
-            style={{ accentColor: thumbColor.replace('accent-', '') }} // Fallback for cleaner pastel thumbs
+            style={{ accentColor: thumbColor.replace('accent-', '') }}
          />
       </div>
    )
@@ -232,7 +252,6 @@ function LegendItem({ color, label, value, symbol }: any) {
    )
 }
 
-// --- 🤖 SMART FINANCIAL AI (Pastel Theme) ---
 function FinancialAIModal({ onClose }: any) {
    const [messages, setMessages] = useState([
       { role: 'bot', text: `Hi! 👋 I am your Cost of Living Advisor.\n\nI have data for 🇺🇸 USA, 🇬🇧 UK, 🇩🇪 Germany, 🇨🇦 Canada, and 🇦🇺 Australia.\n\nAsk me things like:\n"How much is rent in Germany?"\n"Tuition fees in Canada?"` }
@@ -253,7 +272,6 @@ function FinancialAIModal({ onClose }: any) {
       setInput("");
       setIsTyping(true);
 
-      // --- 🧠 AI LOGIC ---
       setTimeout(() => {
          let response = COST_KNOWLEDGE.GENERAL;
          const lower = userMsg.text.toLowerCase();
@@ -274,7 +292,6 @@ function FinancialAIModal({ onClose }: any) {
    return (
       <div className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
          <div className="bg-white w-full max-w-md h-[550px] rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-scale-up border border-indigo-50">
-            {/* Header - Soft Pastel Gradient */}
             <div className="bg-gradient-to-r from-indigo-300 to-purple-300 p-5 text-white flex justify-between items-center">
                <div className="flex items-center gap-3">
                   <div className="bg-white/30 p-2 rounded-full text-xl">💸</div>
@@ -289,14 +306,13 @@ function FinancialAIModal({ onClose }: any) {
                <button onClick={onClose} className="hover:bg-white/20 p-2 rounded-full transition">✕</button>
             </div>
             
-            {/* Chat Area - Very light background */}
             <div className="flex-1 p-5 bg-slate-50 overflow-y-auto space-y-4" ref={scrollRef}>
                {messages.map((m, i) => (
                   <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                      <div className={`max-w-[85%] p-4 rounded-2xl text-sm whitespace-pre-line shadow-sm leading-relaxed
                         ${m.role === 'user' 
-                           ? 'bg-indigo-300 text-indigo-900 font-medium rounded-br-none' // Pastel User Bubble
-                           : 'bg-white border border-slate-100 text-slate-700 rounded-bl-none' // Pastel Bot Bubble
+                           ? 'bg-indigo-300 text-indigo-900 font-medium rounded-br-none' 
+                           : 'bg-white border border-slate-100 text-slate-700 rounded-bl-none' 
                         }`}>
                         {m.text}
                      </div>
@@ -313,7 +329,6 @@ function FinancialAIModal({ onClose }: any) {
                )}
             </div>
 
-            {/* Input - Pastel accents */}
             <div className="p-4 bg-white border-t border-slate-100 flex gap-2">
                <input 
                   type="text" 

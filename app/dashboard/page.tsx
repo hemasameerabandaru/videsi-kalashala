@@ -1,7 +1,8 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { SignOutButton } from "@clerk/nextjs";
+import { SignOutButton, useUser } from "@clerk/nextjs"; // 👈 Added useUser
+import { generateAIResponse } from "@/app/actions"; // 👈 Added Server Action import
 
 // Import Gamified Components
 import GamifiedProfile from "../components/dashboard/GamifiedProfile";
@@ -18,6 +19,9 @@ import GamifiedMentors from "../components/dashboard/GamifiedMentors";
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview");
   const [showGlobalAI, setShowGlobalAI] = useState(false);
+  
+  // 🟢 Get User Data for the AI
+  const { user } = useUser();
 
   return (
     <div className="min-h-screen bg-slate-50 flex font-sans text-slate-900">
@@ -139,187 +143,89 @@ export default function Dashboard() {
         {activeTab === "visa-mock" && <GamifiedVisaMockAI />}
         {activeTab === "mentors" && <GamifiedMentors />}
 
-        {/* 🤖 GLOBAL STUDY ABROAD AI MODAL */}
-        {showGlobalAI && <GlobalStudyAIModal onClose={() => setShowGlobalAI(false)} />}
+        {/* 🤖 REAL GLOBAL STUDY ABROAD AI MODAL */}
+        {/* We pass the 'user' prop so the AI knows who it is talking to! */}
+         {showGlobalAI && <GlobalStudyAIModal 
+    onClose={() => setShowGlobalAI(false)} 
+    userProfile={{
+        firstName: user?.firstName,
+        publicMetadata: user?.publicMetadata
+    }} 
+/>}
 
       </main>
     </div>
   );
 }
 
-// --- 🧠 REALISTIC AI BRAIN ---
-// This uses the full Q&A dataset you provided, categorized for conversational retrieval.
+// --- 🧠 REALISTIC AI BRAIN (POWERED BY GEMINI) ---
 
-const CONVERSATIONAL_KNOWLEDGE = [
-  {
-    keywords: ["mean", "basics", "what is study abroad"],
-    answers: [
-      "Studying abroad simply means pursuing your education in a country different from your own. It's a chance to grow globally!",
-      "Think of it as an adventure where you get a degree while experiencing a new culture, language, and lifestyle."
-    ]
-  },
-  {
-    keywords: ["why", "benefit", "reason"],
-    answers: [
-      "Most students choose it for better education quality, global career exposure, and personal growth. It's a life-changing experience!",
-      "It opens doors to international career opportunities and lets you experience cultural diversity firsthand."
-    ]
-  },
-  {
-    keywords: ["choose country", "destination", "where to go"],
-    answers: [
-      "Start by considering language, cost of living, and the quality of education. Popular choices are USA, UK, Canada, and Germany.",
-      "If budget is a concern, consider Germany (low tuition). If you want top-tier tech exposure, the USA is great. What's your priority?"
-    ]
-  },
-  {
-    keywords: ["course", "major", "subject", "select university"],
-    answers: [
-      "Ideally, choose your course first! Then look for countries that are best at it. Engineering, CS, and Business are very popular.",
-      "Check university rankings, faculty, and alumni success. Also, make sure the university is accredited!"
-    ]
-  },
-  {
-    keywords: ["sop", "statement of purpose", "essay"],
-    answers: [
-      "An SOP (Statement of Purpose) is your personal story. It explains who you are, your goals, and why you want that specific program.",
-      "Think of the SOP as the heart of your application. It's where you convince the admission committee that you are the perfect fit."
-    ]
-  },
-  {
-    keywords: ["ielts", "toefl", "english", "language"],
-    answers: [
-      "IELTS and TOEFL are exams to prove you can handle English-taught classes. Most universities require a score between 6.0 and 7.0.",
-      "If you are going to an English-speaking country, these are usually mandatory. Do you need help preparing?"
-    ]
-  },
-  {
-    keywords: ["gre", "gmat", "sat", "exam"],
-    answers: [
-      "The GRE is often for Master's (STEM) programs, while GMAT is the gold standard for MBA. SAT/ACT are for undergrads in the US.",
-      "Not all universities require them now, but a good score definitely boosts your chances of a scholarship!"
-    ]
-  },
-  {
-    keywords: ["cost", "expensive", "budget", "fees"],
-    answers: [
-      "It depends! The USA can be $30k-$60k/year, while Germany has free tuition in public universities. Costs include tuition + living expenses.",
-      "It can be expensive, but scholarships and part-time jobs (usually 20hrs/week) really help manage the burden."
-    ]
-  },
-  {
-    keywords: ["visa", "student visa", "immigration"],
-    answers: [
-      "A student visa is your legal permit to live there. You'll need your admission letter and proof of funds to apply. It takes 2-12 weeks.",
-      "Don't worry, the process is straightforward if your documents are clean. We have a 'Visa Guide' tab to help you step-by-step!"
-    ]
-  },
-  {
-    keywords: ["work", "job", "part-time", "internship"],
-    answers: [
-      "Yes! Most countries allow you to work part-time (usually 20 hours/week) during classes and full-time during breaks.",
-      "Internships are also highly encouraged. They give you local work experience which is great for your CV."
-    ]
-  },
-  {
-    keywords: ["homesick", "sad", "challenge", "hard", "culture shock"],
-    answers: [
-      "It's completely normal to feel homesick. My advice? Join student clubs, stay connected with family, and give yourself time to adapt.",
-      "Culture shock happens to the best of us. Try to stay open-minded and make friends. It gets easier, I promise!"
-    ]
-  },
-  {
-    keywords: ["career", "future", "job after", "pr", "settle"],
-    answers: [
-      "Employers value the global skills you gain. Many countries also offer Post-Study Work Visas so you can find a job there.",
-      "If you meet the requirements, studying abroad can definitely be a pathway to Permanent Residency (PR) in countries like Canada and Australia."
-    ]
-  }
-];
-
-// Fallback for unknown queries
-const FALLBACK_ANSWERS = [
-  "That's a specific question! While I focus on general study abroad guidance, try asking about 'Visas', 'Costs', or 'Exams'.",
-  "I'm not 100% sure on that detail, but I can tell you about choosing universities or writing an SOP. Want to hear about those?",
-  "I'm still learning! Could you rephrase that? Try asking 'How do I start?' or 'What is an SOP?'"
-];
-
-function GlobalStudyAIModal({ onClose }: any) {
+function GlobalStudyAIModal({ onClose, userProfile }: any) {
+   const userName = userProfile?.firstName || "Student";
+   
+   // Initial Welcome Message
    const [messages, setMessages] = useState([
-      { role: 'bot', text: `Hi there! 👋 I'm your AI Guide.\n\nI can help with everything from "What is an SOP?" to "How to handle homesickness."\n\nWhat's on your mind today?` }
+     { 
+       role: 'bot', 
+       text: `Hi ${userName}! 👋 I'm powered by Google Gemini. I've read your profile.\n\nAsk me about universities for your GPA, visa steps, or SOP tips!` 
+     }
    ]);
    const [input, setInput] = useState("");
    const [isTyping, setIsTyping] = useState(false);
    const scrollRef = useRef<any>(null);
 
-   // Auto-scroll
-   useEffect(() => {
-      if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+   // Auto-scroll to bottom
+   useEffect(() => { 
+     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; 
    }, [messages, isTyping]);
 
    const handleSend = async (text: string = input) => {
       if(!text.trim()) return;
-
-      // 1. User Message
+      
+      // 1. Add User Message to UI
       const userMsg = { role: 'user', text: text };
-      setMessages(prev => [...prev, userMsg]);
+      const newHistory = [...messages, userMsg];
+      setMessages(newHistory);
       setInput("");
       setIsTyping(true);
 
-      // 2. Simulate Thinking Delay (Realism)
-      const thinkingTime = Math.random() * 1000 + 800; // 0.8s to 1.8s
-      
-      await new Promise(r => setTimeout(r, thinkingTime));
+      // 2. Call the Real AI Brain (Server Action)
+      // We pass the new history and the user profile so the AI has context
+      const res = await generateAIResponse(newHistory, userProfile);
 
-      // 3. Find Best Answer
-      let bestAnswer = "";
-      const lowerInput = text.toLowerCase();
+      setIsTyping(false);
       
-      // Simple Scoring System
-      const matchedTopic = CONVERSATIONAL_KNOWLEDGE.find(topic => 
-        topic.keywords.some(k => lowerInput.includes(k))
-      );
-
-      if (matchedTopic) {
-         // Pick a random variation for realism
-         bestAnswer = matchedTopic.answers[Math.floor(Math.random() * matchedTopic.answers.length)];
+      // 3. Display AI Response
+      if (res.success) {
+          const botResponse = res.message;
+          // Typing effect
+          setMessages(prev => [...prev, { role: 'bot', text: "" }]);
+          let i = 0;
+          const interval = setInterval(() => {
+             setMessages(prev => {
+                const historyCopy = [...prev];
+                const lastMsg = historyCopy[historyCopy.length - 1];
+                lastMsg.text = botResponse.substring(0, i + 1);
+                return historyCopy;
+             });
+             i++;
+             if (i === botResponse.length) clearInterval(interval);
+          }, 10); // Speed of typing
       } else {
-         bestAnswer = FALLBACK_ANSWERS[Math.floor(Math.random() * FALLBACK_ANSWERS.length)];
+          setMessages(prev => [...prev, { role: 'bot', text: "⚠️ Error connecting to AI. Check your API Key." }]);
       }
-
-      // 4. Typing Effect Logic
-      setIsTyping(false); // Stop the "..." bubbles
-      streamText(bestAnswer);
-   };
-
-   // Simulates typing character by character
-   const streamText = (fullText: string) => {
-      setMessages(prev => [...prev, { role: 'bot', text: "" }]); // Add empty bot bubble
-      
-      let i = 0;
-      const interval = setInterval(() => {
-         setMessages(prev => {
-            const newHistory = [...prev];
-            const lastMsg = newHistory[newHistory.length - 1];
-            lastMsg.text = fullText.substring(0, i + 1);
-            return newHistory;
-         });
-         i++;
-         if (i === fullText.length) clearInterval(interval);
-      }, 20); // Speed of typing
    };
 
    return (
       <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
-         {/* BIG MODAL */}
          <div className="bg-white w-full max-w-5xl h-[85vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-scale-up border border-indigo-100">
             {/* Header */}
             <div className="bg-indigo-600 p-6 text-white flex justify-between items-center">
                <div className="flex items-center gap-4">
-                  <div className="bg-white/20 p-3 rounded-full text-3xl">🤖</div>
+                  <div className="bg-white/20 p-3 rounded-full text-3xl">✨</div>
                   <div>
-                     <h3 className="font-bold text-2xl">Study Abroad AI</h3>
-                     <p className="text-sm text-indigo-100 opacity-90">Your 24/7 Virtual Counselor</p>
+                     <h3 className="font-bold text-2xl">Gemini Counsellor</h3>
+                     <p className="text-sm text-indigo-100 opacity-90">Context-Aware AI Guidance</p>
                   </div>
                </div>
                <button onClick={onClose} className="hover:bg-white/20 p-2 rounded-full transition text-xl">✕</button>
@@ -329,21 +235,15 @@ function GlobalStudyAIModal({ onClose }: any) {
             <div className="flex-1 p-8 bg-slate-50 overflow-y-auto space-y-6" ref={scrollRef}>
                {messages.map((m, i) => (
                   <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                     <div className={`max-w-[75%] p-6 rounded-2xl text-base whitespace-pre-line shadow-sm leading-relaxed
-                        ${m.role === 'user' 
-                           ? 'bg-indigo-600 text-white rounded-br-none' 
-                           : 'bg-white border border-slate-200 text-slate-800 rounded-bl-none'
-                        }`}>
+                     <div className={`max-w-[75%] p-6 rounded-2xl text-base whitespace-pre-line shadow-sm leading-relaxed ${m.role === 'user' ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-white border border-slate-200 text-slate-800 rounded-bl-none'}`}>
                         {m.text}
                      </div>
                   </div>
                ))}
-               
-               {/* Realistic Typing Indicator */}
                {isTyping && (
                   <div className="flex justify-start">
                      <div className="bg-white border border-slate-200 px-6 py-4 rounded-2xl rounded-bl-none shadow-sm flex gap-2 items-center">
-                        <span className="text-xs text-slate-400 font-bold mr-2">AI is typing</span>
+                        <span className="text-xs text-slate-400 font-bold mr-2">Gemini is thinking</span>
                         <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce"></span>
                         <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce delay-75"></span>
                         <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce delay-150"></span>
@@ -354,30 +254,26 @@ function GlobalStudyAIModal({ onClose }: any) {
 
             {/* Quick Chips */}
             <div className="px-6 pb-4 bg-slate-50 flex gap-3 overflow-x-auto no-scrollbar">
-               {["How do I start?", "What is an SOP?", "Is it expensive?", "Can I work while studying?"].map((chip) => (
-                  <button 
-                     key={chip}
-                     onClick={() => handleSend(chip)}
-                     className="bg-white border border-indigo-200 text-indigo-600 text-sm font-bold px-4 py-2.5 rounded-full whitespace-nowrap hover:bg-indigo-50 hover:shadow-md transition"
-                  >
+               {["Suggest Universities", "Analyze my Budget", "Write an SOP intro", "Visa Checklist"].map((chip) => (
+                  <button key={chip} onClick={() => handleSend(chip)} className="bg-white border border-indigo-200 text-indigo-600 text-sm font-bold px-4 py-2.5 rounded-full whitespace-nowrap hover:bg-indigo-50 hover:shadow-md transition">
                      {chip}
                   </button>
                ))}
             </div>
 
-            {/* Input */}
+            {/* Input Area */}
             <div className="p-6 bg-white border-t border-slate-100 flex gap-4">
                <input 
                   type="text" 
-                  className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-base outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-slate-700 shadow-inner"
-                  placeholder="Ask about visas, courses, or life abroad..."
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                  className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-base outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-slate-700 shadow-inner" 
+                  placeholder="Ask for advice..." 
+                  value={input} 
+                  onChange={(e) => setInput(e.target.value)} 
+                  onKeyDown={(e) => e.key === 'Enter' && handleSend()} 
                />
                <button 
-                  onClick={() => handleSend()}
-                  disabled={!input.trim()} 
+                  onClick={() => handleSend()} 
+                  disabled={!input.trim() || isTyping} 
                   className="bg-indigo-600 text-white px-8 py-4 rounded-2xl hover:bg-indigo-700 transition disabled:opacity-50 shadow-lg active:scale-95 font-bold text-lg"
                >
                   Send ➤

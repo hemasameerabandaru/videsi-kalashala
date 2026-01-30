@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image"; // Added for optimization if needed, or use <img>
 
 export default function Home() {
   return (
@@ -16,11 +17,12 @@ export default function Home() {
             </Link>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
+            <Link href="#why-us" className="hover:text-indigo-600 transition">Why Us</Link>
             <Link href="#features" className="hover:text-indigo-600 transition">Features</Link>
             <Link href="#how-it-works" className="hover:text-indigo-600 transition">How it works</Link>
             <Link href="#testimonials" className="hover:text-indigo-600 transition">Stories</Link>
             
-            {/* LOGIN BUTTON -> Points to /sign-in */}
+            {/* LOGIN BUTTON */}
             <Link href="/sign-in">
               <button className="bg-indigo-50 text-indigo-600 px-6 py-2.5 rounded-full hover:bg-indigo-100 transition border border-indigo-200">
                 Login
@@ -44,14 +46,14 @@ export default function Home() {
           <h2 className="text-5xl md:text-7xl font-extrabold mb-6 leading-tight tracking-tight animate-fade-in-up delay-100">
             Your Dream University <br/> is just a 
             <span className="bg-gradient-to-r from-indigo-600 to-blue-500 bg-clip-text text-transparent px-2">
-               click away.
+                click away.
             </span>
           </h2>
           <p className="text-xl text-slate-600 mb-10 max-w-3xl mx-auto leading-relaxed animate-fade-in-up delay-200">
             Navigate the entire journey—from university shortlisting to visa interviews—with our gamified platform and AI assistants.
           </p>
           
-          {/* START BUTTON -> Points to /sign-up */}
+          {/* START BUTTON */}
           <div className="flex flex-col sm:flex-row justify-center gap-4 animate-fade-in-up delay-300">
             <Link href="/sign-up">
               <button className="bg-indigo-600 text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-indigo-700 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 shadow-indigo-200/50">
@@ -70,11 +72,83 @@ export default function Home() {
         </div>
       </section>
 
+      {/* 🌟 NEW SECTION: WHY CHOOSE VIDESI KALASHALA */}
+      <section id="why-us" className="py-24 bg-white relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col lg:flex-row items-center gap-16">
+            
+            {/* LEFT CONTENT */}
+            <div className="lg:w-1/2 space-y-8">
+              <div>
+                <h3 className="text-sm font-bold text-indigo-600 uppercase tracking-wider mb-2">The Videsi Advantage</h3>
+                <h2 className="text-4xl lg:text-5xl font-extrabold text-slate-900 mb-4 leading-tight">
+                  Why Choose <br/>
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
+                    Videsi Kalashala?
+                  </span>
+                </h2>
+                <p className="text-lg text-slate-600 leading-relaxed">
+                  Traditional counselling is expensive, biased, and time-consuming. 
+                  Our AI-powered platform gives you instant, personalized, and accurate guidance.
+                </p>
+              </div>
+
+              {/* Feature List */}
+              <div className="space-y-6">
+                <WhyUsItem 
+                  icon="⚡"
+                  title="Instant Responses"
+                  desc="Get answers in seconds, not days."
+                />
+                <WhyUsItem 
+                  icon="⚖️"
+                  title="Unbiased Recommendations"
+                  desc="AI suggests best fit, not highest commission."
+                />
+                <WhyUsItem 
+                  icon="🔍"
+                  title="Complete Transparency"
+                  desc="See exactly why each university is recommended."
+                />
+                <WhyUsItem 
+                  icon="🕰️"
+                  title="24/7 Availability"
+                  desc="Ask questions anytime, anywhere."
+                />
+              </div>
+            </div>
+
+            {/* RIGHT IMAGE */}
+            <div className="lg:w-1/2 relative">
+               <div className="absolute -inset-4 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-[2.5rem] opacity-20 blur-2xl"></div>
+               <div className="relative rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white transform hover:scale-[1.02] transition duration-500">
+                  <img 
+                    src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop" 
+                    alt="Students using AI technology" 
+                    className="w-full h-auto object-cover"
+                  />
+                  {/* Floating Badge */}
+                  <div className="absolute bottom-6 left-6 bg-white/90 backdrop-blur-md px-6 py-4 rounded-2xl shadow-lg border border-white/50">
+                     <div className="flex items-center gap-3">
+                        <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                        <div>
+                           <p className="text-xs font-bold text-slate-500 uppercase">Status</p>
+                           <p className="font-bold text-slate-900">AI System Online</p>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
       {/* ✨ FEATURES SECTION */}
-      <section id="features" className="py-24 bg-white relative">
+      <section id="features" className="py-24 bg-slate-50 relative">
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="text-center mb-16">
-             <h3 className="text-sm font-bold text-indigo-600 uppercase tracking-wider mb-3">Why Choose Us</h3>
+             <h3 className="text-sm font-bold text-indigo-600 uppercase tracking-wider mb-3">Our Toolkit</h3>
              <h2 className="text-4xl font-bold text-slate-900">Everything you need in one place.</h2>
           </div>
           
@@ -102,7 +176,7 @@ export default function Home() {
       </section>
 
       {/* 🛠️ HOW IT WORKS */}
-      <section id="how-it-works" className="py-24 bg-slate-50">
+      <section id="how-it-works" className="py-24 bg-white">
          <div className="max-w-7xl mx-auto px-6">
             <div className="text-center mb-16">
                <h3 className="text-sm font-bold text-indigo-600 uppercase tracking-wider mb-3">Simple Process</h3>
@@ -118,7 +192,7 @@ export default function Home() {
       </section>
 
       {/* 💬 TESTIMONIALS */}
-      <section id="testimonials" className="py-24 bg-white relative">
+      <section id="testimonials" className="py-24 bg-slate-50 relative">
          <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
             <div className="absolute top-1/4 left-0 w-64 h-64 bg-blue-50 rounded-full blur-3xl opacity-60"></div>
             <div className="absolute bottom-1/4 right-0 w-64 h-64 bg-purple-50 rounded-full blur-3xl opacity-60"></div>
@@ -136,12 +210,9 @@ export default function Home() {
          </div>
       </section>
 
-      {/* ⚡ CTA SECTION (FIXED VISIBILITY) */}
+      {/* ⚡ CTA SECTION */}
       <section className="py-24 bg-indigo-600 relative overflow-hidden">
-         {/* Gradient overlay for depth */}
          <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-blue-600 opacity-90"></div>
-         
-         {/* Decorative background shapes */}
          <div className="absolute top-0 left-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
          <div className="absolute bottom-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
 
@@ -180,14 +251,28 @@ export default function Home() {
   );
 }
 
-// --- 🧩 SUB-COMPONENTS (Clean Light Theme) ---
+// --- 🧩 SUB-COMPONENTS ---
 
-// 🔴 THIS WAS THE BROKEN COMPONENT IN YOUR ERROR
 function StatBox({ label, value }: any) {
    return (
       <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
          <h3 className="text-3xl font-extrabold text-indigo-600 mb-1">{value}</h3>
          <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">{label}</p>
+      </div>
+   )
+}
+
+// 👇 NEW HELPER FOR WHY US SECTION
+function WhyUsItem({ icon, title, desc }: any) {
+   return (
+      <div className="flex items-start gap-4 p-4 rounded-2xl hover:bg-slate-50 transition-colors duration-300">
+         <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-2xl shadow-sm shrink-0">
+            {icon}
+         </div>
+         <div>
+            <h4 className="text-lg font-bold text-slate-900 mb-1">{title}</h4>
+            <p className="text-slate-600 text-sm leading-relaxed">{desc}</p>
+         </div>
       </div>
    )
 }

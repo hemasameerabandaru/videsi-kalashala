@@ -1,5 +1,8 @@
 "use client";
 import React, { useState, useEffect } from 'react';
+import { useUser } from "@clerk/nextjs"; // 👈 Added Clerk
+import { lockUniversity, unlockUniversity } from "@/app/actions"; // 👈 Added Server Actions
+import { Lock, Unlock, CheckCircle } from "lucide-react"; // 👈 Added Icons
 
 // --- EXPANDED DATABASE (75+ Universities) ---
 const UNIVERSITY_DB = [
@@ -90,6 +93,10 @@ const UNIVERSITY_DB = [
 ];
 
 export default function GamifiedUniversities() {
+  const { user } = useUser(); // 🟢 Get User Data
+  const [lockedId, setLockedId] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+
   // State
   const [activeList, setActiveList] = useState("explore"); 
   const [shortlisted, setShortlisted] = useState<number[]>([]);
@@ -102,21 +109,49 @@ export default function GamifiedUniversities() {
   const [filterIntake, setFilterIntake] = useState("All");
   const [filterCost, setFilterCost] = useState(100000); 
 
-  // Load Profile Score
+  // 🟢 EFFECT: Sync Profile Score & Locked Status from Clerk
   useEffect(() => {
-    const savedProfile = localStorage.getItem('studentProfile');
-    if (savedProfile) {
-      const p = JSON.parse(savedProfile);
-      let score = 20; 
-      if (p.bachelorsScore && parseFloat(p.bachelorsScore) > 8) score += 20;
-      if (p.greScore && parseInt(p.greScore) > 310) score += 20;
-      if (p.englishOverall && parseFloat(p.englishOverall) > 7) score += 15;
-      if (p.hasWorkExperience === 'Yes') score += 15;
-      setProfileScore(score);
-    }
-  }, []);
+    if (user) {
+       const meta = user.publicMetadata as any;
+       
+       // 1. Check if University is Locked
+       if (meta?.lockedUniversityId) {
+          setLockedId(meta.lockedUniversityId);
+       }
 
-  // --- ACTIONS ---
+       // 2. Calculate Profile Score based on Real Data
+       let score = 50; 
+       const gpa = parseFloat(meta?.academic?.gpa || "0");
+       if (gpa > 8.5 || gpa > 3.5) score += 20;
+       if (meta?.exams?.gre > 310) score += 15;
+       if (meta?.budget?.workExp > 0) score += 15;
+       
+       setProfileScore(score);
+    }
+  }, [user]);
+
+  // --- SERVER ACTIONS (Locking) ---
+  const handleLock = async (uniId: number) => {
+    if(confirm("Are you sure? This will lock your roadmap to this university.")) {
+        setLoading(true);
+        await lockUniversity(uniId);
+        setLockedId(uniId);
+        window.location.reload(); 
+        setLoading(false);
+    }
+  };
+
+  const handleUnlock = async () => {
+    if(confirm("Unlock your roadmap? This will reset your progress.")) {
+        setLoading(true);
+        await unlockUniversity();
+        setLockedId(null);
+        window.location.reload();
+        setLoading(false);
+    }
+  };
+
+  // --- CLIENT ACTIONS ---
   const handleShortlist = (id: number) => {
     setShortlisted([...shortlisted, id]);
     setNotSure(notSure.filter(uid => uid !== id));
@@ -164,8 +199,33 @@ export default function GamifiedUniversities() {
          <p className="text-slate-500 font-medium text-lg">AI-powered recommendations based on your profile strength.</p>
       </header>
 
-      {/* CONTROLS CONTAINER */}
-      <div className="bg-white p-2 rounded-2xl shadow-sm border border-slate-200 mb-8 sticky top-4 z-20 backdrop-blur-xl bg-opacity-95">
+      {/* 🔴 LOCKED STATE BANNER */}
+      {lockedId && (
+         <div className="bg-indigo-900 text-white p-8 rounded-3xl shadow-xl mb-12 flex flex-col md:flex-row items-center justify-between gap-6 border-4 border-indigo-200">
+            <div className="flex items-center gap-6">
+               <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center text-5xl">
+                  {UNIVERSITY_DB.find(u => u.id === lockedId)?.flag || "🏛️"}
+               </div>
+               <div>
+                  <div className="flex items-center gap-2 mb-1">
+                     <span className="bg-green-400 text-indigo-900 text-xs font-bold px-2 py-0.5 rounded uppercase flex items-center gap-1"><CheckCircle size={12}/> Locked & Committed</span>
+                  </div>
+                  <h2 className="text-2xl font-bold">{UNIVERSITY_DB.find(u => u.id === lockedId)?.name}</h2>
+                  <p className="text-indigo-200">Your roadmap is now customized for this university.</p>
+               </div>
+            </div>
+            <button 
+               onClick={handleUnlock}
+               disabled={loading}
+               className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-xl font-bold transition flex items-center gap-2"
+            >
+               {loading ? "Processing..." : <><Unlock size={18} /> Change University</>}
+            </button>
+         </div>
+      )}
+
+      {/* CONTROLS CONTAINER (Disable if Locked) */}
+      <div className={`bg-white p-2 rounded-2xl shadow-sm border border-slate-200 mb-8 sticky top-4 z-20 backdrop-blur-xl bg-opacity-95 ${lockedId ? 'opacity-50 pointer-events-none' : ''}`}>
          
          {/* TOP ROW: TABS & SEARCH */}
          <div className="flex flex-col md:flex-row gap-4 p-2">
@@ -213,7 +273,7 @@ export default function GamifiedUniversities() {
       </div>
 
       {/* GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-2">
+      <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-2 ${lockedId ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
          {filteredUnis.length > 0 ? (
             filteredUnis.map((uni) => (
                <UniversityCard 
@@ -223,7 +283,9 @@ export default function GamifiedUniversities() {
                   onShortlist={() => handleShortlist(uni.id)}
                   onNotSure={() => handleNotSure(uni.id)}
                   onRemove={() => handleRemove(uni.id)}
+                  onLock={() => handleLock(uni.id)} // 👈 Pass Lock Function
                   isExplore={activeList === 'explore'}
+                  isShortlisted={activeList === 'shortlisted'} // 👈 Pass Shortlist State
                />
             ))
          ) : (
@@ -275,7 +337,7 @@ function FilterSelect({ value, onChange, options, label, icon }: any) {
    )
 }
 
-function UniversityCard({ uni, profileScore, onShortlist, onNotSure, onRemove, isExplore }: any) {
+function UniversityCard({ uni, profileScore, onShortlist, onNotSure, onRemove, onLock, isExplore, isShortlisted }: any) {
    // Logic for Admission Chance
    let chance = "Low";
    let badgeColor = "bg-red-50 text-red-600 border-red-100";
@@ -332,6 +394,11 @@ function UniversityCard({ uni, profileScore, onShortlist, onNotSure, onRemove, i
                      🤔
                   </button>
                </>
+            ) : isShortlisted ? (
+               // 🟢 LOCK BUTTON (Only visible in Shortlist)
+               <button onClick={onLock} className="w-full bg-slate-900 text-white py-3 rounded-xl font-bold text-sm shadow-lg hover:bg-black transition-all flex items-center justify-center gap-2 active:scale-95">
+                  <Lock size={16} /> Commit & Lock
+               </button>
             ) : (
                <button onClick={onRemove} className="w-full bg-white border-2 border-red-100 text-red-500 py-3 rounded-xl font-bold text-sm hover:bg-red-50 hover:border-red-200 transition-all flex items-center justify-center gap-2 active:scale-95">
                   <span>🗑️</span> Remove

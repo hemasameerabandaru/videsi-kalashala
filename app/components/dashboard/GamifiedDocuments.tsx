@@ -1,33 +1,34 @@
 "use client";
 import React, { useState, useRef } from "react";
+import { RefreshCw, FileText, CheckCircle, Upload, Trash2, Eye } from "lucide-react"; // Added Icons
 
 // --- DOCUMENT CONFIGURATION ---
 const REQUIRED_DOCS = [
   // ACADEMIC
-  { id: 1, name: "10th Marksheet", type: "Academic", format: "YourName_10th.pdf", status: "missing" },
-  { id: 2, name: "12th Marksheet", type: "Academic", format: "YourName_12th.pdf", status: "missing" },
-  { id: 3, name: "All Sem Marksheets", type: "Academic", format: "YourName_AllSem.pdf", status: "missing" },
-  { id: 4, name: "Provisional Certificate", type: "Academic", format: "YourName_PC.pdf", status: "missing" },
-  { id: 5, name: "Consolidated Marks", type: "Academic", format: "YourName_Cmm.pdf", status: "missing" },
-  { id: 6, name: "Original Degree (OD)", type: "Academic", format: "YourName_OD.pdf", status: "missing" },
-  { id: 7, name: "Bonafide Certificate", type: "Academic", format: "YourName_Bonafide.pdf", status: "missing", note: "If currently studying" },
+  { id: 1, name: "10th Marksheet", type: "Academic", format: "YourName_10th.pdf", status: "missing", aiScore: 0 },
+  { id: 2, name: "12th Marksheet", type: "Academic", format: "YourName_12th.pdf", status: "missing", aiScore: 0 },
+  { id: 3, name: "All Sem Marksheets", type: "Academic", format: "YourName_AllSem.pdf", status: "missing", aiScore: 0 },
+  { id: 4, name: "Provisional Certificate", type: "Academic", format: "YourName_PC.pdf", status: "missing", aiScore: 0 },
+  { id: 5, name: "Consolidated Marks", type: "Academic", format: "YourName_Cmm.pdf", status: "missing", aiScore: 0 },
+  { id: 6, name: "Original Degree (OD)", type: "Academic", format: "YourName_OD.pdf", status: "missing", aiScore: 0 },
+  { id: 7, name: "Bonafide Certificate", type: "Academic", format: "YourName_Bonafide.pdf", status: "missing", note: "If currently studying", aiScore: 0 },
   
   // EXAMS
-  { id: 8, name: "English Proficiency", type: "Exams", format: "YourName_English.pdf", status: "uploaded" },
-  { id: 9, name: "GRE Scorecard", type: "Exams", format: "YourName_GRE.pdf", status: "missing" },
+  { id: 8, name: "English Proficiency", type: "Exams", format: "YourName_English.pdf", status: "uploaded", aiScore: 92 }, // Pre-filled example
+  { id: 9, name: "GRE Scorecard", type: "Exams", format: "YourName_GRE.pdf", status: "missing", aiScore: 0 },
 
   // PROFESSIONAL / SOP / LOR
-  { id: 10, name: "Resume / CV", type: "Profile", format: "YourName_RESUME.pdf", status: "verified" },
-  { id: 11, name: "Statement of Purpose", type: "Profile", format: "YourName_SOP.pdf", status: "uploaded" },
-  { id: 12, name: "Letters of Rec (LORs)", type: "Profile", format: "YourName_LORs.pdf", status: "missing", note: "Combine 3 LORs in one PDF" },
-  { id: 13, name: "Work Experience Docs", type: "Profile", format: "YourName_WorkExp.pdf", status: "missing", note: "Offer letter, Payslips, Relieving letter" },
+  { id: 10, name: "Resume / CV", type: "Profile", format: "YourName_RESUME.pdf", status: "verified", aiScore: 95 },
+  { id: 11, name: "Statement of Purpose", type: "Profile", format: "YourName_SOP.pdf", status: "uploaded", aiScore: 88 },
+  { id: 12, name: "Letters of Rec (LORs)", type: "Profile", format: "YourName_LORs.pdf", status: "missing", note: "Combine 3 LORs in one PDF", aiScore: 0 },
+  { id: 13, name: "Work Experience Docs", type: "Profile", format: "YourName_WorkExp.pdf", status: "missing", note: "Offer letter, Payslips, Relieving letter", aiScore: 0 },
 
   // IDENTITY
-  { id: 14, name: "Passport", type: "Identity", format: "YourName_Passport.pdf", status: "verified" },
+  { id: 14, name: "Passport", type: "Identity", format: "YourName_Passport.pdf", status: "verified", aiScore: 100 },
 
   // COUNTRY SPECIFIC
-  { id: 15, name: "Medium of Instruction", type: "Country", format: "YourName_MOI.pdf", status: "missing", tag: "UK Only" },
-  { id: 16, name: "IT Returns (ITR)", type: "Country", format: "YourName_ITR.pdf", status: "missing", tag: "Australia Only" },
+  { id: 15, name: "Medium of Instruction", type: "Country", format: "YourName_MOI.pdf", status: "missing", tag: "UK Only", aiScore: 0 },
+  { id: 16, name: "IT Returns (ITR)", type: "Country", format: "YourName_ITR.pdf", status: "missing", tag: "Australia Only", aiScore: 0 },
 ];
 
 export default function GamifiedDocuments() {
@@ -67,7 +68,8 @@ export default function GamifiedDocuments() {
         type: "Others",
         format: "uploaded_file.pdf",
         status: "uploaded",
-        tag: "Custom Upload"
+        tag: "Custom Upload",
+        aiScore: 85 // Default score for custom uploads
       };
       setDocs([newDoc, ...docs]);
     }
@@ -76,16 +78,23 @@ export default function GamifiedDocuments() {
     event.target.value = '';
   };
 
-  // 3. ANIMATION: Simulate the network upload
+  // 3. ANIMATION: Simulate the network upload + AI Scan 🧠
   const simulateUploadProcess = (id: number) => {
     // Start Loading
     setDocs(prev => prev.map(d => d.id === id ? { ...d, status: "uploading" } : d));
     
-    // Finish Loading
+    // Finish Loading + AI Scoring
     setTimeout(() => {
-       setDocs(prev => prev.map(d => d.id === id ? { ...d, status: "uploaded" } : d));
+       const randomScore = Math.floor(Math.random() * (99 - 85 + 1)) + 85; // Random score 85-99
+       setDocs(prev => prev.map(d => d.id === id ? { ...d, status: "uploaded", aiScore: randomScore } : d));
        setActiveDocId(null);
-    }, 1500);
+    }, 2000); // 2 seconds delay
+  };
+
+  const handleDelete = (id: number) => {
+     if(confirm("Are you sure you want to delete this document?")) {
+        setDocs(prev => prev.map(d => d.id === id ? { ...d, status: "missing", aiScore: 0 } : d));
+     }
   };
 
   // Filter Logic
@@ -108,7 +117,9 @@ export default function GamifiedDocuments() {
          <div className="flex flex-col md:flex-row justify-between items-end gap-6">
             <div>
                <h1 className="text-4xl font-extrabold mb-2 tracking-tight">📂 Document Vault</h1>
-               <p className="text-purple-100 font-medium text-lg opacity-90">Securely organize your application files in one place.</p>
+               <p className="text-purple-100 font-medium text-lg opacity-90">
+                  Securely upload documents. Our <span className="font-bold text-white underline decoration-wavy">AI Checker</span> verifies them instantly.
+               </p>
             </div>
             
             {/* Circular Progress */}
@@ -164,6 +175,7 @@ export default function GamifiedDocuments() {
                key={doc.id} 
                doc={doc} 
                onUpload={() => handleInitiateUpload(doc.id)} 
+               onDelete={() => handleDelete(doc.id)}
             />
          ))}
       </div>
@@ -173,14 +185,16 @@ export default function GamifiedDocuments() {
 }
 
 // --- SUB-COMPONENT: DOCUMENT CARD ---
-function DocumentCard({ doc, onUpload }: any) {
+function DocumentCard({ doc, onUpload, onDelete }: any) {
    const isMissing = doc.status === "missing";
    const isUploading = doc.status === "uploading";
    const isVerified = doc.status === "verified";
    const isUploaded = doc.status === "uploaded"; 
 
    return (
-      <div className="group bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-300 transform hover:-translate-y-1 flex flex-col justify-between h-full relative overflow-hidden">
+      <div className={`group bg-white p-6 rounded-3xl border shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-300 transform hover:-translate-y-1 flex flex-col justify-between h-full relative overflow-hidden
+         ${isUploaded || isVerified ? 'border-green-100' : 'border-slate-100'}
+      `}>
          
          {/* Top Bar Status */}
          <div className={`absolute top-0 left-0 w-full h-1.5 
@@ -191,7 +205,7 @@ function DocumentCard({ doc, onUpload }: any) {
             <div className="flex justify-between items-start mb-4">
                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl shadow-sm
                   ${isVerified ? 'bg-green-50 text-green-600' : isUploaded ? 'bg-blue-50 text-blue-600' : 'bg-slate-50 text-slate-400'}`}>
-                  {isVerified ? '✓' : isUploaded ? '⟳' : '📄'}
+                  {isVerified ? <CheckCircle size={20} /> : isUploaded ? <FileText size={20} /> : <Upload size={20} />}
                </div>
                {doc.tag && (
                   <span className="bg-amber-100 text-amber-700 text-[10px] font-extrabold uppercase tracking-wide px-2 py-1 rounded-lg">
@@ -208,6 +222,17 @@ function DocumentCard({ doc, onUpload }: any) {
             </div>
             
             {doc.note && <p className="text-xs text-slate-400 italic mb-4 bg-slate-50 p-2 rounded-lg border border-slate-100">{doc.note}</p>}
+            
+            {/* 🧠 AI SCORE BADGE (Only if Uploaded) */}
+            {(isUploaded || isVerified) && doc.aiScore > 0 && (
+               <div className="mb-4 bg-indigo-50 border border-indigo-100 p-2 rounded-lg flex items-center gap-2 animate-fade-in">
+                  <div className="text-lg">✨</div>
+                  <div>
+                     <p className="text-[9px] font-bold text-indigo-400 uppercase tracking-wider">AI Quality Score</p>
+                     <p className="text-sm font-extrabold text-indigo-700">{doc.aiScore}/100</p>
+                  </div>
+               </div>
+            )}
          </div>
 
          <div className="mt-auto pt-4 border-t border-slate-50">
@@ -221,17 +246,16 @@ function DocumentCard({ doc, onUpload }: any) {
                </button>
             ) : isUploading ? (
                <div className="w-full bg-slate-50 text-slate-500 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 border border-slate-100">
-                  <span className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></span>
-                  Uploading...
+                  <RefreshCw size={16} className="animate-spin" />
+                  Analyzing...
                </div>
             ) : (
-               <div className="flex items-center justify-between gap-3">
-                  <div className={`flex-1 py-2 rounded-xl text-xs font-bold text-center border
-                     ${isVerified ? 'bg-green-50 text-green-700 border-green-100' : 'bg-blue-50 text-blue-700 border-blue-100'}`}>
-                     {isVerified ? "Verified ✅" : "Pending Review ⏳"}
-                  </div>
-                  <button className="w-10 h-10 flex items-center justify-center rounded-xl border border-slate-200 text-slate-400 hover:text-red-500 hover:bg-red-50 hover:border-red-200 transition-all" title="Delete">
-                     🗑️
+               <div className="flex gap-2">
+                  <button className="flex-1 bg-white border border-slate-200 text-slate-600 py-2.5 rounded-xl font-bold text-xs hover:bg-slate-50 transition flex items-center justify-center gap-2">
+                     <Eye size={14} /> View
+                  </button>
+                  <button onClick={onDelete} className="bg-red-50 text-red-500 px-3 rounded-xl hover:bg-red-100 transition flex items-center justify-center">
+                     <Trash2 size={16} />
                   </button>
                </div>
             )}
