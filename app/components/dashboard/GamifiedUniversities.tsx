@@ -1,8 +1,8 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { useUser } from "@clerk/nextjs"; // 👈 Added Clerk
-import { lockUniversity, unlockUniversity } from "@/app/actions"; // 👈 Added Server Actions
-import { Lock, Unlock, CheckCircle } from "lucide-react"; // 👈 Added Icons
+import { useUser } from "@clerk/nextjs";
+import { lockUniversity, unlockUniversity } from "@/app/actions"; 
+import { Lock, Unlock, CheckCircle, Heart, X, Trash2 } from "lucide-react"; 
 
 // --- EXPANDED DATABASE (75+ Universities) ---
 const UNIVERSITY_DB = [
@@ -92,16 +92,17 @@ const UNIVERSITY_DB = [
   { id: 515, name: "Univ. of Wollongong", country: "Australia", flag: "🇦🇺", intake: "Feb 2026", deadline: "Dec 31, 2025", cost: 29000, difficulty: 57, scholarships: "Available" },
 ];
 
-export default function GamifiedUniversities() {
-  const { user } = useUser(); // 🟢 Get User Data
-  const [lockedId, setLockedId] = useState<number | null>(null);
-  const [loading, setLoading] = useState(false);
+export default function GamifiedUniversities({ initialView }: { initialView?: string }) {
+  const { user } = useUser();
+  const [lockedIds, setLockedIds] = useState<number[]>([]); // 🟢 Changed to Array for Multi-Lock
+  const [loadingId, setLoadingId] = useState<number | null>(null);
 
-  // State
-  const [activeList, setActiveList] = useState("explore"); 
+  // State - Initialize with prop or default to 'explore'
+  const [activeList, setActiveList] = useState(initialView || "explore"); 
   const [shortlisted, setShortlisted] = useState<number[]>([]);
   const [notSure, setNotSure] = useState<number[]>([]);
   const [profileScore, setProfileScore] = useState(50); 
+  const [isLoaded, setIsLoaded] = useState(false); // 🟢 Tracks if LocalStorage has loaded
   
   // Filter State
   const [searchQuery, setSearchQuery] = useState("");
@@ -109,51 +110,80 @@ export default function GamifiedUniversities() {
   const [filterIntake, setFilterIntake] = useState("All");
   const [filterCost, setFilterCost] = useState(100000); 
 
+  // 🛠️ FIX 1: LOAD SHORTLIST FROM LOCAL STORAGE (Run Once)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("videsi_shortlist");
+      if (saved) {
+        try {
+          setShortlisted(JSON.parse(saved));
+        } catch (e) {
+          console.error("Failed to parse shortlist", e);
+        }
+      }
+      setIsLoaded(true); // ✅ Mark as loaded so we don't overwrite it with empty array
+    }
+  }, []);
+
+  // 🛠️ FIX 2: SAVE SHORTLIST TO LOCAL STORAGE (Only after loaded)
+  useEffect(() => {
+    if (typeof window !== "undefined" && isLoaded) {
+      localStorage.setItem("videsi_shortlist", JSON.stringify(shortlisted));
+    }
+  }, [shortlisted, isLoaded]);
+
+  // Effect to update view when prop changes (from Dashboard)
+  useEffect(() => {
+     if (initialView) setActiveList(initialView);
+  }, [initialView]);
+
   // 🟢 EFFECT: Sync Profile Score & Locked Status from Clerk
   useEffect(() => {
     if (user) {
        const meta = user.publicMetadata as any;
        
-       // 1. Check if University is Locked
-       if (meta?.lockedUniversityId) {
-          setLockedId(meta.lockedUniversityId);
+       // Handle Multi-Lock Array from Metadata
+       if (meta?.lockedIds && Array.isArray(meta.lockedIds)) {
+          setLockedIds(meta.lockedIds);
+       } else if (meta?.lockedUniversityId) {
+          // Backward compatibility for single ID
+          setLockedIds([meta.lockedUniversityId]);
        }
 
-       // 2. Calculate Profile Score based on Real Data
+       // Calculate Profile Score
        let score = 50; 
        const gpa = parseFloat(meta?.academic?.gpa || "0");
        if (gpa > 8.5 || gpa > 3.5) score += 20;
        if (meta?.exams?.gre > 310) score += 15;
        if (meta?.budget?.workExp > 0) score += 15;
-       
        setProfileScore(score);
     }
   }, [user]);
 
   // --- SERVER ACTIONS (Locking) ---
   const handleLock = async (uniId: number) => {
-    if(confirm("Are you sure? This will lock your roadmap to this university.")) {
-        setLoading(true);
+    if(confirm("Commit to this university? You can lock multiple options.")) {
+        setLoadingId(uniId);
         await lockUniversity(uniId);
-        setLockedId(uniId);
-        window.location.reload(); 
-        setLoading(false);
+        setLockedIds(prev => [...prev, uniId]); // Optimistic Update
+        setLoadingId(null);
     }
   };
 
-  const handleUnlock = async () => {
-    if(confirm("Unlock your roadmap? This will reset your progress.")) {
-        setLoading(true);
-        await unlockUniversity();
-        setLockedId(null);
-        window.location.reload();
-        setLoading(false);
+  const handleUnlock = async (uniId: number) => {
+    if(confirm("Unlock this university?")) {
+        setLoadingId(uniId);
+        await unlockUniversity(uniId);
+        setLockedIds(prev => prev.filter(id => id !== uniId)); // Optimistic Update
+        setLoadingId(null);
     }
   };
 
   // --- CLIENT ACTIONS ---
   const handleShortlist = (id: number) => {
-    setShortlisted([...shortlisted, id]);
+    if (!shortlisted.includes(id)) {
+        setShortlisted([...shortlisted, id]);
+    }
     setNotSure(notSure.filter(uid => uid !== id));
   };
 
@@ -176,6 +206,7 @@ export default function GamifiedUniversities() {
     } else if (activeList === "notsure") {
       list = list.filter(u => notSure.includes(u.id));
     } else {
+      // Explore Tab: Show everything EXCEPT what is already shortlisted/notsure
       list = list.filter(u => !shortlisted.includes(u.id) && !notSure.includes(u.id));
     }
 
@@ -196,36 +227,13 @@ export default function GamifiedUniversities() {
       {/* HEADER */}
       <header className="mb-10 text-center md:text-left">
          <h1 className="text-4xl font-extrabold text-slate-900 mb-2 tracking-tight">🏛️ University Finder</h1>
-         <p className="text-slate-500 font-medium text-lg">AI-powered recommendations based on your profile strength.</p>
+         <p className="text-slate-500 font-medium text-lg">
+            You have locked <span className="text-indigo-600 font-bold">{lockedIds.length}</span> universities.
+         </p>
       </header>
 
-      {/* 🔴 LOCKED STATE BANNER */}
-      {lockedId && (
-         <div className="bg-indigo-900 text-white p-8 rounded-3xl shadow-xl mb-12 flex flex-col md:flex-row items-center justify-between gap-6 border-4 border-indigo-200">
-            <div className="flex items-center gap-6">
-               <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center text-5xl">
-                  {UNIVERSITY_DB.find(u => u.id === lockedId)?.flag || "🏛️"}
-               </div>
-               <div>
-                  <div className="flex items-center gap-2 mb-1">
-                     <span className="bg-green-400 text-indigo-900 text-xs font-bold px-2 py-0.5 rounded uppercase flex items-center gap-1"><CheckCircle size={12}/> Locked & Committed</span>
-                  </div>
-                  <h2 className="text-2xl font-bold">{UNIVERSITY_DB.find(u => u.id === lockedId)?.name}</h2>
-                  <p className="text-indigo-200">Your roadmap is now customized for this university.</p>
-               </div>
-            </div>
-            <button 
-               onClick={handleUnlock}
-               disabled={loading}
-               className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-xl font-bold transition flex items-center gap-2"
-            >
-               {loading ? "Processing..." : <><Unlock size={18} /> Change University</>}
-            </button>
-         </div>
-      )}
-
-      {/* CONTROLS CONTAINER (Disable if Locked) */}
-      <div className={`bg-white p-2 rounded-2xl shadow-sm border border-slate-200 mb-8 sticky top-4 z-20 backdrop-blur-xl bg-opacity-95 ${lockedId ? 'opacity-50 pointer-events-none' : ''}`}>
+      {/* CONTROLS CONTAINER */}
+      <div className="bg-white p-2 rounded-2xl shadow-sm border border-slate-200 mb-8 sticky top-4 z-20 backdrop-blur-xl bg-opacity-95">
          
          {/* TOP ROW: TABS & SEARCH */}
          <div className="flex flex-col md:flex-row gap-4 p-2">
@@ -273,26 +281,39 @@ export default function GamifiedUniversities() {
       </div>
 
       {/* GRID */}
-      <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-2 ${lockedId ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-2">
          {filteredUnis.length > 0 ? (
-            filteredUnis.map((uni) => (
-               <UniversityCard 
-                  key={uni.id} 
-                  uni={uni} 
-                  profileScore={profileScore}
-                  onShortlist={() => handleShortlist(uni.id)}
-                  onNotSure={() => handleNotSure(uni.id)}
-                  onRemove={() => handleRemove(uni.id)}
-                  onLock={() => handleLock(uni.id)} // 👈 Pass Lock Function
-                  isExplore={activeList === 'explore'}
-                  isShortlisted={activeList === 'shortlisted'} // 👈 Pass Shortlist State
-               />
-            ))
+            filteredUnis.map((uni) => {
+               const isLocked = lockedIds.includes(uni.id);
+               const isShortlisted = shortlisted.includes(uni.id);
+               const isLoading = loadingId === uni.id;
+
+               return (
+                  <UniversityCard 
+                     key={uni.id} 
+                     uni={uni} 
+                     profileScore={profileScore}
+                     isLocked={isLocked}
+                     isShortlisted={isShortlisted}
+                     isLoading={isLoading}
+                     onLock={() => handleLock(uni.id)}
+                     onUnlock={() => handleUnlock(uni.id)}
+                     onShortlist={() => handleShortlist(uni.id)}
+                     onNotSure={() => handleNotSure(uni.id)}
+                     onRemove={() => handleRemove(uni.id)}
+                     activeTab={activeList}
+                  />
+               )
+            })
          ) : (
             <div className="col-span-full py-32 text-center text-slate-400 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
                <div className="text-6xl mb-4 grayscale opacity-50">🏰</div>
-               <h3 className="text-xl font-bold text-slate-600 mb-1">No Kingdoms Found</h3>
-               <p>Try adjusting your filters to find more universities.</p>
+               <h3 className="text-xl font-bold text-slate-600 mb-1">
+                  {activeList === 'shortlisted' ? "Your Shortlist is Empty" : "No Kingdoms Found"}
+               </h3>
+               <p>
+                  {activeList === 'shortlisted' ? "Go to 'Explore' and add universities here." : "Try adjusting your filters."}
+               </p>
             </div>
          )}
       </div>
@@ -337,7 +358,7 @@ function FilterSelect({ value, onChange, options, label, icon }: any) {
    )
 }
 
-function UniversityCard({ uni, profileScore, onShortlist, onNotSure, onRemove, onLock, isExplore, isShortlisted }: any) {
+function UniversityCard({ uni, profileScore, isLocked, isShortlisted, isLoading, onLock, onUnlock, onShortlist, onNotSure, onRemove, activeTab }: any) {
    // Logic for Admission Chance
    let chance = "Low";
    let badgeColor = "bg-red-50 text-red-600 border-red-100";
@@ -352,8 +373,16 @@ function UniversityCard({ uni, profileScore, onShortlist, onNotSure, onRemove, o
 
    return (
       // ✨ 3D POP + LIGHT INDIGO HOVER (BOOSTED)
-      <div className="group relative bg-white hover:bg-indigo-50 rounded-3xl p-6 border border-slate-200 hover:border-indigo-300 shadow-md hover:shadow-2xl hover:shadow-indigo-500/20 transition-all duration-300 ease-out hover:-translate-y-3 hover:scale-[1.02] overflow-hidden flex flex-col h-full transform-gpu">
+      <div className={`group relative bg-white rounded-3xl p-6 border transition-all duration-300 flex flex-col h-full
+         ${isLocked ? 'border-purple-400 shadow-xl shadow-purple-100 scale-[1.02]' : 'border-slate-200 hover:border-indigo-300 hover:shadow-xl'}`}>
          
+         {/* Locked Badge */}
+         {isLocked && (
+             <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-purple-600 text-white text-[10px] font-bold uppercase px-3 py-1 rounded-full flex items-center gap-1 shadow-md z-10">
+                 <CheckCircle size={10} /> Locked Choice
+             </div>
+         )}
+
          {/* Header Section */}
          <div className="flex justify-between items-start mb-4">
             <div className="bg-white w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-sm border border-slate-100 group-hover:scale-110 transition-transform">
@@ -385,24 +414,48 @@ function UniversityCard({ uni, profileScore, onShortlist, onNotSure, onRemove, o
 
          {/* Actions */}
          <div className="mt-auto pt-4 border-t border-slate-100 flex gap-3 opacity-90 group-hover:opacity-100 transition-opacity">
-            {isExplore ? (
+            {activeTab === 'explore' ? (
                <>
-                  <button onClick={onShortlist} className="flex-1 bg-indigo-500 text-white py-3 rounded-xl font-bold text-sm shadow-lg hover:bg-indigo-600 hover:shadow-indigo-200 transition-all flex items-center justify-center gap-2 active:scale-95">
-                     <span>❤️</span> Shortlist
+                  <button 
+                     onClick={onShortlist} 
+                     disabled={isShortlisted}
+                     className={`flex-1 py-3 rounded-xl font-bold text-sm shadow-md transition flex items-center justify-center gap-2
+                     ${isShortlisted ? 'bg-green-100 text-green-700 cursor-default' : 'bg-indigo-500 text-white hover:bg-indigo-600'}`}
+                  >
+                     {isShortlisted ? <><CheckCircle size={16}/> Added</> : <><Heart size={16}/> Shortlist</>}
                   </button>
                   <button onClick={onNotSure} className="w-12 h-12 flex items-center justify-center rounded-xl border-2 border-slate-100 text-xl hover:bg-white hover:border-slate-300 transition-all bg-slate-50 active:scale-95" title="Not Sure">
                      🤔
                   </button>
                </>
-            ) : isShortlisted ? (
-               // 🟢 LOCK BUTTON (Only visible in Shortlist)
-               <button onClick={onLock} className="w-full bg-slate-900 text-white py-3 rounded-xl font-bold text-sm shadow-lg hover:bg-black transition-all flex items-center justify-center gap-2 active:scale-95">
-                  <Lock size={16} /> Commit & Lock
-               </button>
             ) : (
-               <button onClick={onRemove} className="w-full bg-white border-2 border-red-100 text-red-500 py-3 rounded-xl font-bold text-sm hover:bg-red-50 hover:border-red-200 transition-all flex items-center justify-center gap-2 active:scale-95">
-                  <span>🗑️</span> Remove
-               </button>
+               // SHORTLIST ACTIONS
+               <>
+                  {isLocked ? (
+                      <button 
+                         onClick={onUnlock} 
+                         disabled={isLoading}
+                         className="flex-1 bg-red-50 text-red-600 border border-red-100 py-3 rounded-xl font-bold text-sm hover:bg-red-100 transition flex items-center justify-center gap-2"
+                      >
+                         {isLoading ? "..." : <><Unlock size={16} /> Unlock</>}
+                      </button>
+                  ) : (
+                      // ✨ PASTEL LOCK BUTTON ✨
+                      <button 
+                         onClick={onLock} 
+                         disabled={isLoading}
+                         className="flex-1 bg-purple-100 text-purple-900 border border-purple-200 py-3 rounded-xl font-bold text-sm hover:bg-purple-200 transition flex items-center justify-center gap-2 shadow-sm"
+                      >
+                         {isLoading ? "..." : <><Lock size={16} /> Commit & Lock</>}
+                      </button>
+                  )}
+                  
+                  {!isLocked && (
+                      <button onClick={onRemove} className="w-12 flex items-center justify-center rounded-xl border border-slate-200 text-slate-400 hover:text-red-500 hover:bg-red-50 transition">
+                         <Trash2 size={18}/>
+                      </button>
+                  )}
+               </>
             )}
          </div>
       </div>
@@ -410,14 +463,14 @@ function UniversityCard({ uni, profileScore, onShortlist, onNotSure, onRemove, o
 }
 
 function InfoBadge({ label, value, icon, highlight }: any) {
-   return (
-      <div className={`rounded-xl p-2.5 flex flex-col justify-center border ${highlight ? 'bg-red-50 border-red-100' : 'bg-slate-50 border-slate-100 group-hover:bg-white group-hover:border-indigo-100 transition-colors'}`}>
-         <span className={`text-[10px] font-bold uppercase mb-0.5 ${highlight ? 'text-red-400' : 'text-slate-400'}`}>
-            {icon} {label}
-         </span>
-         <span className={`text-sm font-bold truncate ${highlight ? 'text-red-600' : 'text-slate-700'}`}>
-            {value}
-         </span>
-      </div>
-   )
+   return (
+      <div className={`rounded-xl p-2.5 flex flex-col justify-center border ${highlight ? 'bg-red-50 border-red-100' : 'bg-slate-50 border-slate-100 group-hover:bg-white group-hover:border-indigo-100 transition-colors'}`}>
+         <span className={`text-[10px] font-bold uppercase mb-0.5 ${highlight ? 'text-red-400' : 'text-slate-400'}`}>
+            {icon} {label}
+         </span>
+         <span className={`text-sm font-bold truncate ${highlight ? 'text-red-600' : 'text-slate-700'}`}>
+            {value}
+         </span>
+      </div>
+   )
 }

@@ -100,14 +100,40 @@ export async function deleteUniversity(id: number) {
 }
 
 // ---------------------------------------------------------
-// 4. LOCKING LOGIC
+// 4. LOCKING LOGIC (UPDATED FOR MULTI-LOCK) 🔐
 // ---------------------------------------------------------
 export async function lockUniversity(uniId: number) {
-  const { userId } = await auth();
-  if (!userId) return { message: "error" };
+  // Use currentUser() to get metadata easily
+  const user = await currentUser();
+  if (!user) return { message: "error" };
+
   const client = await clerkClient();
+  
   try {
-    await client.users.updateUserMetadata(userId, { publicMetadata: { lockedUniversityId: uniId } });
+    // 1. Get existing locks (default to empty array if none)
+    const meta = user.publicMetadata as any;
+    // Handle both old single ID and new array format
+    let currentLocks: number[] = [];
+    
+    if (Array.isArray(meta.lockedIds)) {
+        currentLocks = meta.lockedIds;
+    } else if (meta.lockedUniversityId) {
+        currentLocks = [meta.lockedUniversityId];
+    }
+
+    // 2. Add new ID if not present
+    if (!currentLocks.includes(uniId)) {
+        const newLocks = [...currentLocks, uniId];
+        
+        await client.users.updateUserMetadata(user.id, {
+            publicMetadata: { 
+                lockedIds: newLocks,
+                // Clear the old single field to avoid confusion
+                lockedUniversityId: null 
+            }
+        });
+    }
+
     revalidatePath("/dashboard");
     return { message: "success" };
   } catch (err) {
@@ -116,13 +142,29 @@ export async function lockUniversity(uniId: number) {
   }
 }
 
-export async function unlockUniversity() {
-  const { userId } = await auth();
-  if (!userId) return { message: "error" };
+export async function unlockUniversity(uniId: number) {
+  const user = await currentUser();
+  if (!user) return { message: "error" };
+
   const client = await clerkClient();
-  await client.users.updateUserMetadata(userId, { publicMetadata: { lockedUniversityId: null } });
-  revalidatePath("/dashboard");
-  return { message: "success" };
+
+  try {
+    const meta = user.publicMetadata as any;
+    let currentLocks: number[] = Array.isArray(meta.lockedIds) ? meta.lockedIds : [];
+
+    // Filter out the specific ID
+    const newLocks = currentLocks.filter((id) => id !== uniId);
+
+    await client.users.updateUserMetadata(user.id, {
+        publicMetadata: { lockedIds: newLocks }
+    });
+
+    revalidatePath("/dashboard");
+    return { message: "success" };
+  } catch (err) {
+    console.error("Unlocking Error:", err);
+    return { message: "error" };
+  }
 }
 
 // ---------------------------------------------------------
