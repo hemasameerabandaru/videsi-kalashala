@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image"; // Added for optimization if needed, or use <img>
+import Image from "next/image"; 
 
 export default function Home() {
   return (
@@ -22,8 +22,8 @@ export default function Home() {
             <Link href="#how-it-works" className="hover:text-indigo-600 transition">How it works</Link>
             <Link href="#testimonials" className="hover:text-indigo-600 transition">Stories</Link>
             
-            {/* LOGIN BUTTON */}
-            <Link href="/sign-in">
+            {/* 🟢 FIXED: Points to /login */}
+            <Link href="/login">
               <button className="bg-indigo-50 text-indigo-600 px-6 py-2.5 rounded-full hover:bg-indigo-100 transition border border-indigo-200">
                 Login
               </button>
@@ -53,9 +53,9 @@ export default function Home() {
             Navigate the entire journey—from university shortlisting to visa interviews—with our gamified platform and AI assistants.
           </p>
           
-          {/* START BUTTON */}
+          {/* 🟢 FIXED: Points to /signup */}
           <div className="flex flex-col sm:flex-row justify-center gap-4 animate-fade-in-up delay-300">
-            <Link href="/sign-up">
+            <Link href="/signup">
               <button className="bg-indigo-600 text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-indigo-700 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 shadow-indigo-200/50">
                 Start Your Journey Now ➜
               </button>
@@ -223,7 +223,8 @@ export default function Home() {
             <p className="text-xl text-indigo-100 mb-10 max-w-2xl mx-auto">
                Join thousands of students who found their best-fit university with Videsi Kalashala.
             </p>
-            <Link href="/dashboard">
+            {/* 🟢 FIXED: Points to /signup */}
+            <Link href="/signup">
               <button className="bg-white text-indigo-600 px-12 py-4 rounded-full font-bold text-xl hover:bg-indigo-50 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 shadow-lg">
                 Create Free Account ➜
               </button>
@@ -262,7 +263,6 @@ function StatBox({ label, value }: any) {
    )
 }
 
-// 👇 NEW HELPER FOR WHY US SECTION
 function WhyUsItem({ icon, title, desc }: any) {
    return (
       <div className="flex items-start gap-4 p-4 rounded-2xl hover:bg-slate-50 transition-colors duration-300">

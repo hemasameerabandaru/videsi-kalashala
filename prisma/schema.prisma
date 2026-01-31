@@ -1,79 +1,43 @@
-// This connects to your database
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
-// This helps Prisma generate JavaScript code
 generator client {
   provider = "prisma-client-js"
 }
 
-// 1. STUDENT MODEL (Profile) 👨‍🎓
-model Student {
-  id             String   @id @default(uuid()) // Unique ID
-  clerkId        String   @unique              // Link to Login
-  firstName      String?
-  lastName       String?
-  email          String   @unique
-  phone          String?
-  targetCountry  String?
-  degree         String?  // Masters/Bachelors
-  intake         String?  // Fall 2026
-  
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  // Relationships (What belongs to this student?)
-  applications   Application[]
-  bookings       Booking[]
-  documents      Document[]
+datasource db {
+  provider = "sqlite"
+  url      = "file:./prisma/dev.db"
 }
 
-// 2. UNIVERSITY MODEL 🏛️
-model University {
-  id        Int      @id @default(autoincrement())
-  name      String
-  country   String
-  rank      String
-  fees      String
-  logo      String?  @default("🏛️")
+// 🟢 NEXT-AUTH STANDARD MODELS
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
   
-  // Relationships
-  applications Application[]
+  // 🟢 YOUR CUSTOM FIELDS (Replaces Clerk Metadata)
+  metadata      String?
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
 
-// 3. APPLICATION TRACKER 🚀
-model Application {
-  id           Int      @id @default(autoincrement())
-  status       String   @default("Draft") // Applied, Offer, Rejected
-  appliedDate  DateTime @default(now())
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?
+  access_token       String?
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?
+  session_state      String?
 
-  // Links
-  studentId    String
-  student      Student    @relation(fields: [studentId], references: [id])
-  universityId Int
-  university   University @relation(fields: [universityId], references: [id])
-}
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-// 4. BOOKINGS (Mentorship) 📅
-model Booking {
-  id        Int      @id @default(autoincrement())
-  type      String   // Visa Mock, Profile Eval
-  date      DateTime
-  status    String   @default("Pending") // Confirmed, Completed
-  
-  studentId String
-  student   Student  @relation(fields: [studentId], references: [id])
-}
-
-// 5. DOCUMENTS 📂
-model Document {
-  id        Int      @id @default(autoincrement())
-  name      String   // Passport, Marksheet
-  url       String   // Link to file storage
-  status    String   @default("Uploaded")
-  
-  studentId String
-  student   Student  @relation(fields: [studentId], references: [id])
+  @@unique([provider, providerAccountId])
 }

@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation';
 export default async function AdminUniversities() {
   
   // 👇 FETCH REAL DATA FROM DB
-  const unis = await getUniversities();
+  const unis: any[] = await getUniversities();
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 flex">

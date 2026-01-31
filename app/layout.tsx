@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, Dancing_Script } from "next/font/google";
 import "./globals.css";
-import { ClerkProvider } from '@clerk/nextjs';
+// 🔴 REMOVED: import { ClerkProvider } from '@clerk/nextjs';
+import { Providers } from "./providers"; // 🟢 ADDED: New NextAuth Provider
 
 // 1. Load the Standard Font (Inter)
 const inter = Inter({ subsets: ["latin"] });
@@ -27,13 +28,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
-      <html lang="en">
-        {/* 3. Apply both fonts to the body */}
-        <body className={`${inter.className} ${dancingScript.variable} bg-slate-50 text-slate-900`}>
+    <html lang="en">
+      {/* 3. Apply both fonts to the body */}
+      <body className={`${inter.className} ${dancingScript.variable} bg-slate-50 text-slate-900`}>
+        {/* 🟢 WRAPPER: Replaced ClerkProvider with Providers */}
+        <Providers>
           {children}
-        </body>
-      </html>
-    </ClerkProvider>
+        </Providers>
+      </body>
+    </html>
   );
 }

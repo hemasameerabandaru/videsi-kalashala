@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useSession } from "next-auth/react";
 import { unlockUniversity } from "@/app/actions"; // 👈 Import Unlock Action
 import { CheckCircle, Circle, FileText, Upload, Calendar, Lock, ChevronDown, Trash2 } from "lucide-react";
 
@@ -33,7 +33,7 @@ const BASE_APP_DATA = {
 };
 
 export default function GamifiedApplications() {
-  const { user } = useUser();
+  const { data: session } = useSession();
   const [view, setView] = useState("list"); 
   const [selectedApp, setSelectedApp] = useState<any>(null);
   const [showChat, setShowChat] = useState(false);
@@ -42,8 +42,8 @@ export default function GamifiedApplications() {
 
   // 1. SYNC LOCKED UNIVERSITIES
   useEffect(() => {
-    if (user) {
-      const meta = user.publicMetadata as any;
+    if (session?.user) {
+      const meta = (session.user as any).metadata as any;
       let ids: number[] = [];
 
       if (meta?.lockedIds && Array.isArray(meta.lockedIds)) {
@@ -63,7 +63,7 @@ export default function GamifiedApplications() {
 
       setApplications(apps);
     }
-  }, [user]);
+  }, [session?.user]);
 
   // --- ACTIONS ---
   const handleOpenI20 = (app: any) => {

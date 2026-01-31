@@ -1,9 +1,9 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { useUser } from '@clerk/nextjs';
+import { useSession } from 'next-auth/react';
 
 export default function GamifiedProfile() {
-  const { user, isLoaded } = useUser();
+  const { data: session } = useSession();
   const [isSaved, setIsSaved] = useState(false);
   const [xp, setXp] = useState(20);
 
@@ -27,12 +27,11 @@ export default function GamifiedProfile() {
   // 🔄 FIX: SMART SYNC (Database > Local Storage)
   useEffect(() => {
     const syncProfile = async () => {
-        if (!isLoaded || !user) return;
+        if (!session?.user?.id) return;
 
-        // 1. Force Refresh User Data (to get latest metadata)
-        await user.reload();
-        const meta = user.publicMetadata as any;
-        console.log("🔍 Clerk Metadata Found:", meta);
+        // 1. User metadata from session
+        const meta = (session.user as any).metadata as any;
+        console.log("🔍 NextAuth Metadata Found:", meta);
 
         let finalData = { ...defaultFormData };
 
@@ -45,12 +44,12 @@ export default function GamifiedProfile() {
             } catch (e) { console.error("Local storage error", e); }
         }
 
-        // 3. Load Clerk Metadata (HIGH PRIORITY - Overwrites LocalStorage)
+        // 3. Load NextAuth Metadata (HIGH PRIORITY - Overwrites LocalStorage)
         // This ensures the onboarding data actually shows up!
         if (meta?.onboardingComplete) {
             console.log("✅ Applying Onboarding Data...");
             
-            // Helper to only overwrite if Clerk has a real value
+            // Helper to only overwrite if NextAuth has a real value
             const merge = (key: string, val: any) => {
                 if (val && val !== '' && val !== 0) {
                     // @ts-ignore
@@ -87,7 +86,7 @@ export default function GamifiedProfile() {
     };
 
     syncProfile();
-  }, [isLoaded, user]);
+  }, [session?.user?.id]);
 
   const calculateXP = (data: any) => {
     let newXp = 20;
@@ -110,7 +109,7 @@ export default function GamifiedProfile() {
     setTimeout(() => setIsSaved(false), 3000);
   };
 
-  if (!isLoaded) return <div className="p-10 text-center">Loading Profile...</div>;
+  if (!session) return <div className="p-10 text-center">Loading Profile...</div>;
 
   return (
     <div className="animate-fade-in max-w-6xl mx-auto pb-20">
@@ -134,10 +133,10 @@ export default function GamifiedProfile() {
         <div className="lg:col-span-1 space-y-6">
            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm text-center sticky top-8">
               <div className="w-32 h-32 mx-auto bg-indigo-50 rounded-full p-1 mb-4 relative">
-                 <img src={user?.imageUrl} alt="Avatar" className="w-full h-full rounded-full object-cover border-4 border-white shadow-md" />
+                 {session?.user?.image && <img src={session.user.image} alt="Avatar" className="w-full h-full rounded-full object-cover border-4 border-white shadow-md" />}
               </div>
-              <h2 className="text-xl font-bold text-slate-900">{user?.fullName || "Student"}</h2>
-              <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-6">{user?.primaryEmailAddress?.emailAddress}</p>
+              <h2 className="text-xl font-bold text-slate-900">{session?.user?.name || "Student"}</h2>
+              <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-6">{session?.user?.email}</p>
            </div>
         </div>
 

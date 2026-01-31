@@ -1,10 +1,10 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useUser } from '@clerk/nextjs';
+import { useSession } from 'next-auth/react';
 
 export default function ProfilePage() {
-  const { user } = useUser();
+  const { data: session } = useSession();
   const [isSaved, setIsSaved] = useState(false);
   const [xp, setXp] = useState(20); // Start with 20% XP
 
@@ -111,16 +111,16 @@ export default function ProfilePage() {
              <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm text-center sticky top-8">
                 <div className="w-32 h-32 mx-auto bg-indigo-50 rounded-full p-1 mb-4 relative group">
                    <img 
-                     src={user?.imageUrl || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"} 
+                     src={session?.user?.image || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"} 
                      alt="Avatar" 
                      className="w-full h-full rounded-full object-cover border-4 border-white shadow-md group-hover:scale-105 transition"
                    />
                    <div className="absolute bottom-2 right-2 bg-green-500 w-6 h-6 rounded-full border-4 border-white animate-pulse"></div>
                 </div>
                 
-                <h2 className="text-xl font-bold text-slate-900">{user?.fullName || "Player One"}</h2>
+                <h2 className="text-xl font-bold text-slate-900">{session?.user?.name || "Player One"}</h2>
                 <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-6">
-                  {user?.primaryEmailAddress?.emailAddress}
+                  {session?.user?.email}
                 </p>
                 
                 <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">

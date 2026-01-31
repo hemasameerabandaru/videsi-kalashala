@@ -1,14 +1,14 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
+import { useSession } from "next-auth/react";
 import { BookOpen, Globe, CheckCircle, Briefcase, GraduationCap, DollarSign, ArrowRight, ArrowLeft } from "lucide-react";
 // 👇 IMPORT THE ACTION HERE
 import { completeOnboarding } from "@/app/actions";
 
 export default function Onboarding() {
   const router = useRouter();
-  const { user } = useUser();
+  const { data: session } = useSession();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
 

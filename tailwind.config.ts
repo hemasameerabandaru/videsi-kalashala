@@ -9,8 +9,8 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        brand: ['var(--font-brand)'], // 👈 Connects to the new font
-        sans: ['Inter', 'sans-serif'],
+        sans: ["var(--font-geist-sans)"], // or ["Inter"] depending on your setup
+      brand: ["var(--font-brand)"],
       },
       colors: {
         primary: {

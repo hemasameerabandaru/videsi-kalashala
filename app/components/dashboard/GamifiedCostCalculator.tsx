@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
-import { useUser } from "@clerk/nextjs"; // 👈 Added Clerk Hook
+import { useSession } from "next-auth/react"; // 👈 Added NextAuth Hook
 
 // --- 🧠 AI KNOWLEDGE BASE (COSTS) ---
 const COST_KNOWLEDGE = {
@@ -22,9 +22,7 @@ const CURRENCIES = {
 };
 
 export default function GamifiedCostCalculator() {
-  const { user } = useUser(); // 👈 Get User Data
-  
-  // State
+  const { data: session } = useSession(); // 👈 Get User Data
   const [currency, setCurrency] = useState("USD");
   const [tuition, setTuition] = useState(30000);
   const [rent, setRent] = useState(1200);
@@ -35,12 +33,12 @@ export default function GamifiedCostCalculator() {
 
   // 🟢 EFFECT: Fetch Profile Budget
   useEffect(() => {
-    if (user) {
-        const meta = user.publicMetadata as any;
+    if (session?.user) {
+        const meta = (session.user as any).metadata as any;
         const savedBudget = parseInt(meta?.budget?.amount || "0");
         if (savedBudget > 0) setUserBudget(savedBudget);
     }
-  }, [user]);
+  }, [session?.user]);
 
   // Derived Values
   const currentSymbol = CURRENCIES[currency as keyof typeof CURRENCIES].symbol;

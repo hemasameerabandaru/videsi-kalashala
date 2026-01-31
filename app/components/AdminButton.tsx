@@ -1,19 +1,19 @@
 "use client";
 import React from 'react';
 import Link from 'next/link';
-import { useUser } from '@clerk/nextjs';
+import { useSession } from 'next-auth/react';
 
 export default function AdminButton() {
-  const { user, isLoaded } = useUser();
+  const { data: session } = useSession();
 
   // 1. Wait for user data to load
-  if (!isLoaded || !user) {
+  if (!session?.user) {
     return null;
   }
 
   // 2. DEFINE ADMIN EMAIL (Case insensitive check)
   const adminEmail = "hemasameera15@gmail.com";
-  const currentUserEmail = user.primaryEmailAddress?.emailAddress || "";
+  const currentUserEmail = session.user.email || "";
 
   // 3. If email doesn't match, HIDE the button (Return nothing)
   if (currentUserEmail.toLowerCase() !== adminEmail.toLowerCase()) {

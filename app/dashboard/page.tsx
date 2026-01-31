@@ -1,9 +1,11 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { SignOutButton, useUser } from "@clerk/nextjs";
+// 🔴 REMOVED: import { SignOutButton, useUser } from "@clerk/nextjs";
+// 🟢 ADDED: NextAuth Hooks
+import { useSession, signOut } from "next-auth/react"; 
 import { generateAIResponse } from "@/app/actions";
-import { Upload, AlertCircle, X, ArrowRight, PlayCircle, BookOpen, Mic } from "lucide-react";
+import { Upload, AlertCircle, X, ArrowRight, PlayCircle, BookOpen, Mic, Volume2, StopCircle } from "lucide-react";
 
 // --- IMPORT YOUR GAMIFIED COMPONENTS ---
 import GamifiedProfile from "../components/dashboard/GamifiedProfile";
@@ -11,30 +13,33 @@ import GamifiedUniversities from "../components/dashboard/GamifiedUniversities";
 import GamifiedApplications from "../components/dashboard/GamifiedApplications";
 import GamifiedDocuments from "../components/dashboard/GamifiedDocuments";
 import GamifiedCostCalculator from "../components/dashboard/GamifiedCostCalculator";
-// Restoring the "Old" Sections you requested:
 import GamifiedRoadmap from "../components/dashboard/GamifiedRoadmap";
 import GamifiedAssessment from "../components/dashboard/GamifiedAssessment";
 import GamifiedScholarships from "../components/dashboard/GamifiedScholarships";
 import GamifiedVisaGuide from "../components/dashboard/GamifiedVisaGuide";
 import GamifiedVisaMockAI from "../components/dashboard/GamifiedVisaMockAI";
 import GamifiedMentors from "../components/dashboard/GamifiedMentors";
+import PlaceholderTab from "../components/dashboard/PlaceholderTab"; // Fallback if file missing
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview");
   const [showGlobalAI, setShowGlobalAI] = useState(false);
   
   // 🟢 Interaction States
-  const [uniView, setUniView] = useState("explore"); // Controls Universities Tab View
-  const [showPendingModal, setShowPendingModal] = useState(false); // Controls Pending Actions Modal
-  const [selectedPrep, setSelectedPrep] = useState<string | null>(null); // Controls Prep Modal
+  const [uniView, setUniView] = useState("explore");
+  const [showPendingModal, setShowPendingModal] = useState(false);
+  const [selectedPrep, setSelectedPrep] = useState<string | null>(null);
   
-  const { user } = useUser();
+  // 🟢 NEXTAUTH SESSION (Replaces Clerk useUser)
+  const { data: session } = useSession();
+  const user = session?.user; // The user object from Google (name, email, image)
+  const userName = user?.name?.split(" ")[0] || "Student"; // Get first name
 
   // 🟢 NAVIGATION HANDLER
   const handleStatClick = (type: string) => {
     if (type === "shortlist") {
-        setUniView("shortlisted"); // Tell Universities to show Shortlist
-        setActiveTab("universities"); // Switch Tab
+        setUniView("shortlisted");
+        setActiveTab("universities");
     } else if (type === "applications") {
         setActiveTab("applications");
     } else if (type === "pending") {
@@ -76,11 +81,13 @@ export default function Dashboard() {
         </nav>
 
         <div className="p-6 border-t border-slate-100">
-           <SignOutButton redirectUrl="/"> 
-             <button className="flex items-center gap-3 w-full p-4 text-red-600 hover:bg-red-50 rounded-xl transition font-bold text-base mt-1">
-                <span>🚪</span> Sign Out
-             </button>
-           </SignOutButton>
+           {/* 🟢 WORKING SIGN OUT BUTTON */}
+           <button 
+             onClick={() => signOut({ callbackUrl: "/" })}
+             className="flex items-center gap-3 w-full p-4 text-red-600 hover:bg-red-50 rounded-xl transition font-bold text-base mt-1"
+           >
+              <span>🚪</span> Sign Out
+           </button>
         </div>
       </aside>
 
@@ -92,41 +99,24 @@ export default function Dashboard() {
           <div className="animate-fade-in space-y-10 pb-24">
             <header className="flex justify-between items-end">
               <div>
-                <h1 className="text-4xl font-extrabold text-slate-900 mb-3">Welcome back! 👋</h1>
+                <h1 className="text-4xl font-extrabold text-slate-900 mb-3">Welcome back, {userName}! 👋</h1>
                 <p className="text-slate-500 font-medium text-lg">Here is your daily activity overview.</p>
               </div>
-              <button 
-                onClick={() => setActiveTab("universities")}
-                className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold text-lg hover:bg-indigo-700 transition shadow-lg hover:shadow-xl hover:-translate-y-1"
-              >
+              <button onClick={() => setActiveTab("universities")} className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold text-lg hover:bg-indigo-700 transition shadow-lg hover:shadow-xl hover:-translate-y-1">
                 + Find Universities
               </button>
             </header>
             
-            {/* STATS CARDS (Now Clickable) */}
+            {/* STATS CARDS */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <StatsCard 
-                  title="Universities Shortlisted" value="12" icon="❤️" 
-                  color="bg-white border border-slate-200 text-slate-900 cursor-pointer hover:border-indigo-400 hover:shadow-lg transition hover:-translate-y-1" 
-                  onClick={() => handleStatClick('shortlist')}
-              />
-              <StatsCard 
-                  title="Applications Sent" value="5" icon="🚀" 
-                  color="bg-white border border-slate-200 text-slate-900 cursor-pointer hover:border-indigo-400 hover:shadow-lg transition hover:-translate-y-1" 
-                  onClick={() => handleStatClick('applications')}
-              />
-              <StatsCard 
-                  title="Pending Actions" value="3" icon="⏳" 
-                  color="bg-white border border-slate-200 text-slate-900 cursor-pointer hover:border-indigo-400 hover:shadow-lg transition hover:-translate-y-1" 
-                  onClick={() => handleStatClick('pending')}
-              />
+              <StatsCard title="Universities Shortlisted" value="12" icon="❤️" color="bg-white border border-slate-200 text-slate-900 cursor-pointer hover:border-indigo-400 hover:shadow-lg transition hover:-translate-y-1" onClick={() => handleStatClick('shortlist')} />
+              <StatsCard title="Applications Sent" value="5" icon="🚀" color="bg-white border border-slate-200 text-slate-900 cursor-pointer hover:border-indigo-400 hover:shadow-lg transition hover:-translate-y-1" onClick={() => handleStatClick('applications')} />
+              <StatsCard title="Pending Actions" value="3" icon="⏳" color="bg-white border border-slate-200 text-slate-900 cursor-pointer hover:border-indigo-400 hover:shadow-lg transition hover:-translate-y-1" onClick={() => handleStatClick('pending')} />
             </div>
 
-            {/* PREP SECTION (Now Clickable) */}
+            {/* PREP SECTION */}
             <div>
-               <h3 className="text-xl font-extrabold text-slate-900 mb-6 flex items-center gap-3">
-                  <span>📚</span> Start My Prep
-               </h3>
+               <h3 className="text-xl font-extrabold text-slate-900 mb-6 flex items-center gap-3"><span>📚</span> Start My Prep</h3>
                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                   <PrepCard title="IELTS" icon="🇬🇧" color="bg-orange-50 border-orange-100" btnColor="bg-orange-500" progress={30} onClick={() => setSelectedPrep("IELTS")} />
                   <PrepCard title="Duolingo" icon="🦉" color="bg-green-50 border-green-100" btnColor="bg-green-500" progress={10} onClick={() => setSelectedPrep("Duolingo")} />
@@ -157,9 +147,7 @@ export default function Dashboard() {
         )}
 
         {/* 🟢 RENDER SELECTED TAB */}
-        {/* We pass initialView to Universities so it opens the correct list */}
         {activeTab === "universities" && <GamifiedUniversities initialView={uniView} />}
-        
         {activeTab === "profile" && <GamifiedProfile />}
         {activeTab === "roadmap" && <GamifiedRoadmap />}
         {activeTab === "assessment" && <GamifiedAssessment />}
@@ -182,8 +170,235 @@ export default function Dashboard() {
 }
 
 // -----------------------------------------------------------
-// 🆕 PREP CONTENT MODAL (LESSONS)
+// 🎤 SEAMLESS VOICE AI COMPONENT (FEMALE VOICE)
 // -----------------------------------------------------------
+function GlobalStudyAIModal({ onClose, userProfile }: any) {
+   const userName = userProfile?.name || "Student";
+   const [messages, setMessages] = useState([{ role: 'bot', text: `Hi ${userName}! 👋 I'm Videsi AI. You can speak to me! Ask about universities, visas, or practice an interview.` }]);
+   const [input, setInput] = useState("");
+   const [isTyping, setIsTyping] = useState(false);
+   const [isListening, setIsListening] = useState(false);
+   const [isSpeaking, setIsSpeaking] = useState(false);
+   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+   
+   const scrollRef = useRef<any>(null);
+   const recognitionRef = useRef<any>(null);
+
+   // Auto-scroll
+   useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, [messages, isTyping]);
+
+   // Load Voices when component mounts
+   useEffect(() => {
+      const loadVoices = () => {
+         const voices = window.speechSynthesis.getVoices();
+         setAvailableVoices(voices);
+      };
+      
+      // Load immediately if available
+      loadVoices();
+      
+      // Chrome loads voices asynchronously, so we must listen for the event
+      if (window.speechSynthesis.onvoiceschanged !== undefined) {
+         window.speechSynthesis.onvoiceschanged = loadVoices;
+      }
+   }, []);
+
+   // Initialize Speech Recognition
+   useEffect(() => {
+      if (typeof window !== 'undefined' && 'webkitSpeechRecognition' in window) {
+         const recognition = new (window as any).webkitSpeechRecognition();
+         recognition.continuous = false;
+         recognition.interimResults = false;
+         recognition.lang = 'en-US';
+
+         recognition.onstart = () => setIsListening(true);
+         recognition.onend = () => setIsListening(false);
+         recognition.onresult = (event: any) => {
+            const transcript = event.results[0][0].transcript;
+            setInput(transcript);
+            handleSend(transcript); // Auto-send when speaking stops
+         };
+         recognitionRef.current = recognition;
+      }
+   }, []);
+
+   // 🗣️ FEMALE VOICE SELECTOR logic
+   const speakText = (text: string) => {
+      if ('speechSynthesis' in window) {
+         window.speechSynthesis.cancel(); // Stop any previous speech
+         
+         const utterance = new SpeechSynthesisUtterance(text);
+         
+         // 🎯 FIND A FEMALE VOICE
+         // Prioritize voices known to be female
+         const femaleVoice = availableVoices.find(v => 
+            v.name.includes("Google US English") || // Often female on Chrome
+            v.name.includes("Zira") || // Windows Female
+            v.name.includes("Samantha") || // Mac Female
+            v.name.toLowerCase().includes("female") // Generic check
+         );
+
+         // Apply voice if found, otherwise default
+         if (femaleVoice) {
+            utterance.voice = femaleVoice;
+         }
+         
+         utterance.lang = 'en-US';
+         utterance.rate = 1.0; // Normal speed
+         utterance.pitch = 1.0; // Natural pitch
+         
+         utterance.onstart = () => setIsSpeaking(true);
+         utterance.onend = () => setIsSpeaking(false);
+         
+         window.speechSynthesis.speak(utterance);
+      }
+   };
+
+   const stopSpeaking = () => {
+      if ('speechSynthesis' in window) {
+         window.speechSynthesis.cancel();
+         setIsSpeaking(false);
+      }
+   };
+
+   const startListening = () => {
+      stopSpeaking(); // Stop AI if it's talking so it listens clearly
+      if (recognitionRef.current) {
+         recognitionRef.current.start();
+      } else {
+         alert("Voice input not supported in this browser. Please try Chrome.");
+      }
+   };
+
+   const handleSend = async (text: string = input) => {
+      if(!text.trim()) return;
+      
+      const userMsg = { role: 'user', text: text };
+      const newHistory = [...messages, userMsg];
+      setMessages(newHistory);
+      setInput("");
+      setIsTyping(true);
+
+      // Call Backend (Real AI)
+      const res = await generateAIResponse(newHistory, userProfile);
+
+      setIsTyping(false);
+      
+      if (res.success) {
+          const botResponse = res.message;
+          
+          // 1. Speak Immediately (Parallel)
+          speakText(botResponse);
+
+          // 2. Stream Text Visually
+          setMessages(prev => [...prev, { role: 'bot', text: "" }]);
+          let i = 0;
+          const interval = setInterval(() => {
+             setMessages(prev => {
+                const historyCopy = [...prev];
+                const lastMsg = historyCopy[historyCopy.length - 1];
+                if (lastMsg) lastMsg.text = botResponse.substring(0, i + 1);
+                return historyCopy;
+             });
+             i++;
+             if (i === botResponse.length) clearInterval(interval);
+          }, 15); 
+      } else {
+          setMessages(prev => [...prev, { role: 'bot', text: "⚠️ Error connecting to AI. Please check your API Key." }]);
+      }
+   };
+
+   return (
+      <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
+         <div className="bg-white w-full max-w-5xl h-[85vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-scale-up border border-indigo-100">
+            {/* Header */}
+            <div className="bg-indigo-600 p-6 text-white flex justify-between items-center">
+               <div className="flex items-center gap-4">
+                  <div className="bg-white/20 p-3 rounded-full text-3xl">✨</div>
+                  <div>
+                     <h3 className="font-bold text-2xl">Gemini Voice Counsellor</h3>
+                     <p className="text-sm text-indigo-100 opacity-90">Powered by Gemini 1.5 Flash</p>
+                  </div>
+               </div>
+               <button onClick={() => { stopSpeaking(); onClose(); }} className="hover:bg-white/20 p-2 rounded-full transition text-xl">✕</button>
+            </div>
+
+            {/* Chat Area */}
+            <div className="flex-1 p-8 bg-slate-50 overflow-y-auto space-y-6" ref={scrollRef}>
+               {messages.map((m, i) => (
+                  <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                     <div className={`max-w-[75%] p-6 rounded-2xl text-base whitespace-pre-line shadow-sm leading-relaxed ${m.role === 'user' ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-white border border-slate-200 text-slate-800 rounded-bl-none'}`}>
+                        {m.text}
+                     </div>
+                  </div>
+               ))}
+               
+               {/* Typing / Listening Indicators */}
+               {isTyping && (
+                  <div className="flex justify-start">
+                     <div className="bg-white border border-slate-200 px-6 py-4 rounded-2xl rounded-bl-none shadow-sm flex gap-2 items-center">
+                        <span className="text-xs text-slate-400 font-bold mr-2">Thinking...</span>
+                        <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce"></span>
+                        <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce delay-75"></span>
+                     </div>
+                  </div>
+               )}
+               {isListening && (
+                  <div className="flex justify-end">
+                     <div className="bg-red-50 border border-red-200 px-6 py-4 rounded-2xl rounded-br-none shadow-sm flex gap-2 items-center text-red-600 font-bold animate-pulse">
+                        <Mic size={18} /> Listening... Speak now
+                     </div>
+                  </div>
+               )}
+            </div>
+
+            {/* Quick Chips */}
+            <div className="px-6 pb-4 bg-slate-50 flex gap-3 overflow-x-auto no-scrollbar">
+               {["Suggest Universities", "Analyze my Budget", "Mock Interview", "Visa Checklist"].map((chip) => (
+                  <button key={chip} onClick={() => handleSend(chip)} className="bg-white border border-indigo-200 text-indigo-600 text-sm font-bold px-4 py-2.5 rounded-full whitespace-nowrap hover:bg-indigo-50 hover:shadow-md transition">
+                     {chip}
+                  </button>
+               ))}
+            </div>
+
+            {/* Input Area with Voice Controls */}
+            <div className="p-6 bg-white border-t border-slate-100 flex gap-4 items-center">
+               
+               {/* 🎤 VOICE BUTTON */}
+               <button 
+                  onClick={isSpeaking ? stopSpeaking : startListening}
+                  className={`p-4 rounded-full shadow-lg transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center
+                     ${isListening ? 'bg-red-500 text-white animate-pulse' : 
+                       isSpeaking ? 'bg-amber-500 text-white' : 'bg-indigo-100 text-indigo-600 hover:bg-indigo-200'}`}
+               >
+                  {isListening ? <Mic size={24} /> : isSpeaking ? <StopCircle size={24} /> : <Mic size={24} />}
+               </button>
+
+               <input 
+                  type="text" 
+                  className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-base outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-slate-700 shadow-inner" 
+                  placeholder="Type or use microphone..." 
+                  value={input} 
+                  onChange={(e) => setInput(e.target.value)} 
+                  onKeyDown={(e) => e.key === 'Enter' && handleSend()} 
+               />
+               <button 
+                  onClick={() => handleSend()} 
+                  disabled={!input.trim() || isTyping} 
+                  className="bg-indigo-600 text-white px-8 py-4 rounded-2xl hover:bg-indigo-700 transition disabled:opacity-50 shadow-lg active:scale-95 font-bold text-lg"
+               >
+                  Send ➤
+               </button>
+            </div>
+         </div>
+      </div>
+   )
+}
+
+// -----------------------------------------------------------
+// HELPER COMPONENTS & MODALS (Keep existing ones)
+// -----------------------------------------------------------
+
 function PrepContentModal({ exam, onClose }: any) {
   const content: any = {
     "IELTS": {
@@ -243,9 +458,6 @@ function PrepContentModal({ exam, onClose }: any) {
   )
 }
 
-// -----------------------------------------------------------
-// PENDING ACTIONS MODAL
-// -----------------------------------------------------------
 function PendingActionsModal({ onClose }: any) {
   const [uploading, setUploading] = useState<number | null>(null);
   const actions = [
@@ -293,64 +505,6 @@ function PendingActionsModal({ onClose }: any) {
         </div>
      </div>
   )
-}
-
-function GlobalStudyAIModal({ onClose, userProfile }: any) {
-   const userName = userProfile?.firstName || "Student";
-   const [messages, setMessages] = useState([{ role: 'bot', text: `Hi ${userName}! 👋 I'm powered by Google Gemini. I've read your profile.\n\nAsk me about universities for your GPA, visa steps, or SOP tips!` }]);
-   const [input, setInput] = useState("");
-   const [isTyping, setIsTyping] = useState(false);
-   const scrollRef = useRef<any>(null);
-   useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, [messages, isTyping]);
-   const handleSend = async (text: string = input) => {
-      if(!text.trim()) return;
-      const userMsg = { role: 'user', text: text };
-      const newHistory = [...messages, userMsg];
-      setMessages(newHistory); setInput(""); setIsTyping(true);
-      const res = await generateAIResponse(newHistory, userProfile);
-      setIsTyping(false);
-      if (res.success) {
-          const botResponse = res.message;
-          setMessages(prev => [...prev, { role: 'bot', text: "" }]);
-          let i = 0;
-          const interval = setInterval(() => {
-             setMessages(prev => {
-                const historyCopy = [...prev];
-                historyCopy[historyCopy.length - 1].text = botResponse.substring(0, i + 1);
-                return historyCopy;
-             });
-             i++;
-             if (i === botResponse.length) clearInterval(interval);
-          }, 10); 
-      } else {
-          setMessages(prev => [...prev, { role: 'bot', text: "⚠️ Error connecting to AI. Check your API Key." }]);
-      }
-   };
-   return (
-      <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
-         <div className="bg-white w-full max-w-5xl h-[85vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-scale-up border border-indigo-100">
-            <div className="bg-indigo-600 p-6 text-white flex justify-between items-center">
-               <div className="flex items-center gap-4"><div className="bg-white/20 p-3 rounded-full text-3xl">✨</div><div><h3 className="font-bold text-2xl">Gemini Counsellor</h3><p className="text-sm text-indigo-100 opacity-90">Context-Aware AI Guidance</p></div></div>
-               <button onClick={onClose} className="hover:bg-white/20 p-2 rounded-full transition text-xl">✕</button>
-            </div>
-            <div className="flex-1 p-8 bg-slate-50 overflow-y-auto space-y-6" ref={scrollRef}>
-               {messages.map((m, i) => (
-                  <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                     <div className={`max-w-[75%] p-6 rounded-2xl text-base whitespace-pre-line shadow-sm leading-relaxed ${m.role === 'user' ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-white border border-slate-200 text-slate-800 rounded-bl-none'}`}>{m.text}</div>
-                  </div>
-               ))}
-               {isTyping && <div className="flex justify-start"><div className="bg-white border border-slate-200 px-6 py-4 rounded-2xl rounded-bl-none shadow-sm flex gap-2 items-center"><span className="text-xs text-slate-400 font-bold mr-2">Gemini is thinking</span><span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce"></span><span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce delay-75"></span><span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce delay-150"></span></div></div>}
-            </div>
-            <div className="px-6 pb-4 bg-slate-50 flex gap-3 overflow-x-auto no-scrollbar">
-               {["Suggest Universities", "Analyze my Budget", "Write an SOP intro", "Visa Checklist"].map((chip) => (<button key={chip} onClick={() => handleSend(chip)} className="bg-white border border-indigo-200 text-indigo-600 text-sm font-bold px-4 py-2.5 rounded-full whitespace-nowrap hover:bg-indigo-50 hover:shadow-md transition">{chip}</button>))}
-            </div>
-            <div className="p-6 bg-white border-t border-slate-100 flex gap-4">
-               <input type="text" className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-base outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all text-slate-700 shadow-inner" placeholder="Ask for advice..." value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSend()} />
-               <button onClick={() => handleSend()} disabled={!input.trim() || isTyping} className="bg-indigo-600 text-white px-8 py-4 rounded-2xl hover:bg-indigo-700 transition disabled:opacity-50 shadow-lg active:scale-95 font-bold text-lg">Send ➤</button>
-            </div>
-         </div>
-      </div>
-   )
 }
 
 function NavItem({ id, icon, label, activeTab, setActiveTab }: any) {

@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { useUser } from "@clerk/nextjs";
+import { useSession } from "next-auth/react";
 import { lockUniversity, unlockUniversity } from "@/app/actions"; 
 import { Lock, Unlock, CheckCircle, Heart, X, Trash2 } from "lucide-react"; 
 
@@ -93,7 +93,7 @@ const UNIVERSITY_DB = [
 ];
 
 export default function GamifiedUniversities({ initialView }: { initialView?: string }) {
-  const { user } = useUser();
+  const { data: session } = useSession();
   const [lockedIds, setLockedIds] = useState<number[]>([]); // 🟢 Changed to Array for Multi-Lock
   const [loadingId, setLoadingId] = useState<number | null>(null);
 
@@ -137,10 +137,10 @@ export default function GamifiedUniversities({ initialView }: { initialView?: st
      if (initialView) setActiveList(initialView);
   }, [initialView]);
 
-  // 🟢 EFFECT: Sync Profile Score & Locked Status from Clerk
+  // 🟢 EFFECT: Sync Profile Score & Locked Status from NextAuth
   useEffect(() => {
-    if (user) {
-       const meta = user.publicMetadata as any;
+    if (session?.user) {
+       const meta = (session.user as any).metadata as any;
        
        // Handle Multi-Lock Array from Metadata
        if (meta?.lockedIds && Array.isArray(meta.lockedIds)) {
@@ -158,7 +158,7 @@ export default function GamifiedUniversities({ initialView }: { initialView?: st
        if (meta?.budget?.workExp > 0) score += 15;
        setProfileScore(score);
     }
-  }, [user]);
+  }, [session?.user]);
 
   // --- SERVER ACTIONS (Locking) ---
   const handleLock = async (uniId: number) => {
